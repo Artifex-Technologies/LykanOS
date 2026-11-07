@@ -264,6 +264,14 @@ the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
    synthesised entries that launch CLI tools in a terminal (Ghostty). The image's
    icon theme is Liki (`liki-icon-theme`), so generated entries should reference
    icon names it provides, or they will show a generic fallback.
+
+   **Wired 2026-11-07:** `/usr/local/bin/niflheim-tool-menu`, run by
+   `etc/pacman.d/hooks/90-niflheim-tool-menu.hook` after every pacman transaction
+   (and while the ISO is built), runs `sarina desktop-audit --apply
+   --only-category Security --target-dir /usr/local/share/applications` (the flag
+   is Sarina c90f1ae). Yggdrasil's start menu has a Security folder and opens
+   `Terminal=true` entries in a terminal with a shell left open (Yggdrasil
+   7236d54). Remapping existing `X-BlackArch-*` entries and icons are not done.
 3. **Data analysis** — the reason the agent is in the OS at all: making sense
    of scan and capture output in place.
 4. **`blackarch_compat` against a real Docker daemon** — currently

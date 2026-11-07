@@ -114,6 +114,15 @@ Labyrinth's catalog lives in Labyrinth's image (`/usr/share/labyrinth`), so on N
   recovery mode. Its recipe is in Labyrinth_OS (`packages/pkgbuilds/argus-git`), like everything else Niflheim installs from
   `[labyrinth]`; it is not on Labyrinth's ISO and Labyrinth's Agora does not list it.
 
+## The tools in the start menu
+
+Most security tools ship no menu entry, so on a plain desktop they are invisible. `niflheim-tool-menu` (run by a pacman hook
+after every install, upgrade or removal, and while the ISO is built) has Sarina's `desktop-audit` write an entry for each
+installed command-line tool whose pacman group or description makes it a security tool (`--only-category Security`), in
+`/usr/local/share/applications`. Yggdrasil's start menu lists them in its Security folder and starts them in a terminal, with the
+shell left open after the tool's help. Only entries marked as Sarina's are replaced or removed. Needs the `sarina-git` published
+after 2026-11-07 (the flag); with an older one the hook does nothing. Not checked on a Niflheim image yet.
+
 ## The look
 
 Deep teal green, decided 2026-11-07 from a reference picture: `#101c1c` at the edges, `#24413c` in the middle, `#437569`

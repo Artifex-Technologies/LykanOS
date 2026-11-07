@@ -36,6 +36,8 @@ file_permissions=(
   # The installer runs this in the target after copying the image
   # (usr/share/yggdrasil/integrations/niflheim-installer.conf).
   ["/usr/local/bin/niflheim-install-cleanup"]="0:0:755"
+  # Run by a pacman hook (etc/pacman.d/hooks/90-niflheim-tool-menu.hook), also during the build.
+  ["/usr/local/bin/niflheim-tool-menu"]="0:0:755"
   # Trailing slash matters: mkarchiso only recurses (chown -fhR) when the path
   # ends in one. 1000:1000 is numeric because the live user does not exist at
   # build time -- sysusers.d/live.conf creates it at boot, pinned to uid 1000.

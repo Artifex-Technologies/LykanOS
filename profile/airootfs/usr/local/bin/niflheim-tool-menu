@@ -1,0 +1,14 @@
+#!/bin/sh
+# niflheim-tool-menu: start-menu entries for Niflheim's security tools, which mostly ship none (13 of 15 sampled on the
+# 2026-09-12 ISO had no entry, so the desktop showed no sign of them). Sarina's `desktop-audit` proposes an entry for each
+# installed command-line tool from its pacman group and description; only those with the Security category are written,
+# system-wide, in /usr/local/share/applications (Yggdrasil's start menu lists them under Security and opens them in a terminal).
+# Run by a pacman hook after every transaction (also while the ISO is built), so a tool installed later gets an entry and a
+# removed one loses it. Only entries Sarina marked as hers (X-Sarina-Generated) are ever replaced or removed.
+set -u
+DIR=/usr/local/share/applications
+command -v sarina >/dev/null 2>&1 || exit 0
+mkdir -p "$DIR" || exit 0
+sarina desktop-audit --remove-generated --target-dir "$DIR" >/dev/null 2>&1
+sarina desktop-audit --apply --only-category Security --target-dir "$DIR" >/dev/null 2>&1
+exit 0
