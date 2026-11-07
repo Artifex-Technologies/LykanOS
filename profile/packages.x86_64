@@ -1,8 +1,8 @@
-# Chymaera OS package list for mkarchiso.
+# Niflheim OS package list for mkarchiso.
 #
 # Section 1 is archiso's releng base list, unmodified (installer, live-boot,
 # and hardware-support packages: archlinux/archiso configs/releng/packages.x86_64).
-# Sections 2+ are Chymaera additions. Keeping releng's list intact rather than
+# Sections 2+ are Niflheim additions. Keeping releng's list intact rather than
 # trimming it avoids silently dropping live-boot/hardware support we haven't
 # individually verified we can do without.
 
@@ -189,15 +189,15 @@ wireguard-tools
 
 # --- graphical installer ---
 # calamares is AUR-only (not in core/extra/multilib) — built locally from
-# packages/pkgbuilds/calamares into the [chymaera] repo, same as sarina-git.
+# packages/pkgbuilds/calamares into the [niflheim] repo, same as sarina-git.
 # archinstall (releng base, above) stays available as a CLI/scripted option;
-# Calamares is meant to be the primary live-session installer. No Chymaera
+# Calamares is meant to be the primary live-session installer. No Niflheim
 # branding yet. The job sequence is in airootfs/etc/calamares/ — see
 # docs/INSTALLER.md.
 calamares
 
 # --- desktop theming (macOS-like look) ---
-# Built locally into [chymaera] from packages/pkgbuilds/, same as calamares.
+# Built locally into [niflheim] from packages/pkgbuilds/, same as calamares.
 # Both light and dark variants install; the live session defaults to dark and
 # either can be picked in System Settings > Global Theme.
 mactahoe-kde-theme
@@ -207,7 +207,7 @@ mactahoe-icon-theme
 kvantum
 
 # --- security tooling (hand-picked core) ---
-# Chymaera ships a small, offline-usable core rather than baking in the
+# Niflheim ships a small, offline-usable core rather than baking in the
 # blackarch-* category groups. Those groups pulled in several thousand
 # packages, unresolvable lib32-* dependencies, and half a dozen provider
 # menus, and no one had validated the combination (see docs/ARCHITECTURE.md).
@@ -271,7 +271,7 @@ responder
 
 # --- Sarina ---
 # sarina-git is built locally from the packages/sarina submodule into the
-# [chymaera] repo — see scripts/build-sarina-package.sh.
+# [niflheim] repo — see scripts/build-sarina-package.sh.
 git
 python
 sarina-git

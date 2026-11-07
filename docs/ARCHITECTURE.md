@@ -25,7 +25,7 @@
    the primary graphical, live-session installer (a graphical wizard suits a
    live USB better than `archinstall`'s TUI). It's AUR-only, not in Arch's
    official repos, so it's vendored at `packages/pkgbuilds/calamares` and
-   built the same way as Sarina, into the `[chymaera]` repo. It installs by
+   built the same way as Sarina, into the `[niflheim]` repo. It installs by
    copying the live squashfs rather than running `pacstrap`, which is what
    makes it quick and lets it work offline; its configuration ships in
    `profile/airootfs/etc/calamares/`. How and why, and what is unverified, is
@@ -38,7 +38,7 @@
 ## Tool delivery: a small baked-in core, then Sarina
 
 Kali ships a curated default set (`kali-linux-default`) rather than every tool
-in its repos, to keep the base system usable. Chymaera originally copied that
+in its repos, to keep the base system usable. Niflheim originally copied that
 shape by baking in fifteen `blackarch-*` category groups. **That approach was
 abandoned**; the ISO now ships a small hand-picked core and defers the rest to
 Sarina at install time.
@@ -128,7 +128,7 @@ checkout's `scripts/run_archiso.sh` boots a built ISO in QEMU.
 
 The live medium autologins a passwordless `live` user straight into Plasma
 (Wayland). Everything in this section is live-medium only: the installer strips
-it from the installed system (`chymaera-install-cleanup`, see
+it from the installed system (`niflheim-install-cleanup`, see
 [INSTALLER.md](INSTALLER.md)). Getting here took three things that are each easy
 to get wrong:
 
@@ -157,7 +157,7 @@ one.** The account has no password, so anything that asks for one strands the
 user. That is why the profile also ships `sudoers.d` and a polkit rule granting
 `wheel` unprompted access, and disables Plasma's screen locker via
 `/etc/xdg/kscreenlockerrc`. All three are live-medium only: Calamares writes
-the installed system's own policy, and `chymaera-install-cleanup` deletes the
+the installed system's own policy, and `niflheim-install-cleanup` deletes the
 live files so none of this reaches it. That script keeps its own list of these
 files, so a new live-only file has to be added there too.
 
@@ -180,7 +180,7 @@ Two deliberate departures from upstream:
 
 - **No dock.** The look-and-feel package ships
   `layouts/org.kde.plasma.desktop-layout.js`, a macOS layout with a top bar
-  and a dock. It is not installed. Chymaera keeps Plasma's stock bottom
+  and a dock. It is not installed. Niflheim keeps Plasma's stock bottom
   panel, so the theme is applied as individual settings (colour scheme,
   decoration, desktop theme) rather than by setting `LookAndFeelPackage`,
   which could pull the layout in with it.
@@ -207,9 +207,9 @@ packages/sarina/            (git submodule, tracks Sarina)
 packages/pkgbuilds/sarina-git/PKGBUILD
         │  (makepkg, run as a regular user)
         ▼
-repo/x86_64/*.pkg.tar.zst + chymaera.db   (local pacman repo, gitignored)
+repo/x86_64/*.pkg.tar.zst + niflheim.db   (local pacman repo, gitignored)
         │
-        ▼  scripts/build.sh → mkarchiso, using profile/pacman.conf's [chymaera] repo
+        ▼  scripts/build.sh → mkarchiso, using profile/pacman.conf's [niflheim] repo
 out/*.iso
 ```
 
@@ -232,7 +232,7 @@ install.
 
 Beyond running as a packaged, on-system service (`sarina-service`, from
 `packaging/arch/` upstream), the intent is for Sarina to take an active
-hand in maintaining Chymaera itself over time — not just be an app that
+hand in maintaining Niflheim itself over time — not just be an app that
 happens to ship on it:
 
 - **Tool organization**: raw BlackArch packages tend to drop binaries into
@@ -259,18 +259,18 @@ command, a systemd timer, a Plasma applet, etc. — TBD).
   Sarina's install-time selection exists and it is clear what the core has to
   cover on its own.
 - Sequencing: the lean ISO assumes Sarina will deliver tools post-install, and
-  that capability does not exist yet. Until it does, Chymaera ships less
+  that capability does not exist yet. Until it does, Niflheim ships less
   tooling than it did as a concept. That is an accepted, temporary cost.
 - Calamares: the job sequence, `unpackfs` source and a post-unpack cleanup are
   configured but **have never been run** (see [INSTALLER.md](INSTALLER.md)).
   Still on upstream defaults: branding (`branding.desc`, logo, slideshow),
   partition and user defaults, and the required-disk-space check. Whether to
-  package the config as a `chymaera-calamares-config` package or keep it in
+  package the config as a `niflheim-calamares-config` package or keep it in
   `airootfs` (as now) is open; `airootfs` works because Calamares only runs on
   the live medium.
-- Chymaera's own identity on top of the MacTahoe base: logo, a Chymaera
+- Niflheim's own identity on top of the MacTahoe base: logo, a Niflheim
   wallpaper, and a Calamares branding module. The desktop currently looks
-  like macOS, not like Chymaera.
+  like macOS, not like Niflheim.
 - The desktop wallpaper is still Plasma's default. Setting it means writing
   `plasma-org.kde.plasma.desktop-appletsrc`, which also encodes the panel
   layout -- hand-writing a partial one risks shipping a session with no

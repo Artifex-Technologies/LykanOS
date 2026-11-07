@@ -3,7 +3,7 @@
 # Upstream source: https://codeberg.org/Calamares/calamares (the GitHub repo
 # is archived; Codeberg is where Calamares development moved).
 #
-# Kept as-is from AUR. The Chymaera job sequence and module config are NOT in
+# Kept as-is from AUR. The Niflheim job sequence and module config are NOT in
 # this package: they ship in profile/airootfs/etc/calamares/ and override the
 # sample config that INSTALL_CONFIG=ON installs here (whose unpackfs source is a
 # developer file). Branding is still upstream's; see docs/INSTALLER.md.

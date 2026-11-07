@@ -5,12 +5,12 @@
 #   omarchy  tiling desktop, Omarchy-style keyboard-first bar (default)
 #   stealth  floating, rounded macOS-style desktop with a menu bar and dock
 #
-# Usage: chymaera-desktop-mode [toggle|omarchy|stealth|apply|status]
+# Usage: niflheim-desktop-mode [toggle|omarchy|stealth|apply|status]
 #
 # `apply` re-creates the bar, dock and app theming for the *current* mode
 # without changing it; the session runs it once at login so the shell matches
 # whatever was last chosen. The mode is one word in
-# ~/.local/state/chymaera/desktop-mode, read by ~/.config/hypr/hyprland.lua.
+# ~/.local/state/niflheim/desktop-mode, read by ~/.config/hypr/hyprland.lua.
 #
 # Modelled on Omarchy's toggle scripts (MIT, Copyright (c) David Heinemeier
 # Hansson; see THIRD_PARTY_NOTICES.md): write a small state file, then let
@@ -18,7 +18,7 @@
 
 set -u
 
-STATE_DIR=${XDG_STATE_HOME:-$HOME/.local/state}/chymaera
+STATE_DIR=${XDG_STATE_HOME:-$HOME/.local/state}/niflheim
 STATE_FILE=$STATE_DIR/desktop-mode
 CONFIG=${XDG_CONFIG_HOME:-$HOME/.config}
 
@@ -114,7 +114,7 @@ case ${1:-toggle} in
   apply) apply ;;
   status) current_mode ;;
   *)
-    echo "Usage: chymaera-desktop-mode [toggle|omarchy|stealth|apply|status]" >&2
+    echo "Usage: niflheim-desktop-mode [toggle|omarchy|stealth|apply|status]" >&2
     exit 1
     ;;
 esac

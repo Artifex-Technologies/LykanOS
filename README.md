@@ -1,6 +1,6 @@
-# Chymaera OS
+# Niflheim OS
 
-Chymaera OS is an Arch-based distribution built for security research and
+Niflheim OS (formerly Chymaera OS; renamed 2026-11-07) is an Arch-based distribution built for security research and
 penetration testing, combining:
 
 - **[Arch Linux](https://archlinux.org/)** as the rolling-release base
@@ -29,7 +29,7 @@ do not do.
 Kali does a lot right: curated tool menus, consistent documentation, a
 predictable release/support cadence. But Kali isn't developed in the open on
 GitHub, and BlackArch (which *is* on GitHub) ships its full tool catalog by
-default, which can make the base system less stable for daily use. Chymaera
+default, which can make the base system less stable for daily use. Niflheim
 aims to sit between them: an openly developed, Arch-based system with a
 deliberately small default tool set, a polished desktop (Hyprland, with KDE
 Plasma as the fallback session), and an AI agent built in to help with recon, scripting, analysis, and general system
@@ -57,7 +57,7 @@ being built.
 ## Built on Omarchy
 
 [Omarchy](https://github.com/omacom/omarchy) (MIT, by David Heinemeier Hansson)
-is the reference for Chymaera's desktop, and where its packages fit they are
+is the reference for Niflheim's desktop, and where its packages fit they are
 consumed as-is rather than copied, so its updates keep flowing. What is in the
 tree today:
 
@@ -71,14 +71,14 @@ tree today:
 
 Planned, not built: Omarchy's Quickshell shell, which brings its screensaver,
 theme system and third-party lock screens, and Omarchy's agents panel showing
-Sarina's usage beside Claude Code and the other agents. Chymaera keeps its own
+Sarina's usage beside Claude Code and the other agents. Niflheim keeps its own
 live ISO, installer, system identity and boot configuration rather than taking
 Omarchy's `omarchy-settings` package, which overwrites `/etc/os-release` on
 every upgrade.
 
-Chymaera does not use an AUR helper. AUR-only software we need (Calamares) is
-vendored as a PKGBUILD and built into Chymaera's own repo. Omarchy installs AUR
-packages with `yay`; whether Chymaera adopts that is undecided.
+Niflheim does not use an AUR helper. AUR-only software we need (Calamares) is
+vendored as a PKGBUILD and built into Niflheim's own repo. Omarchy installs AUR
+packages with `yay`; whether Niflheim adopts that is undecided.
 
 The design, measurements and everything still unverified are in
 [docs/DESKTOP.md](docs/DESKTOP.md).
@@ -86,11 +86,11 @@ The design, measurements and everything still unverified are in
 ## Repository layout
 
 ```
-Chymaera_OS/
+Niflheim_OS/
 ├── profile/                  # archiso profile used to build the live/install ISO
 │   ├── profiledef.sh         # ISO metadata (name, label, boot modes, etc.)
 │   ├── packages.x86_64       # package list installed into the ISO/target system
-│   ├── pacman.conf           # repo config: core/extra + [blackarch] + [chymaera]
+│   ├── pacman.conf           # repo config: core/extra + [blackarch] + [niflheim]
 │   └── airootfs/             # files overlaid onto the live system's root (incl. etc/calamares/)
 ├── packages/
 │   ├── sarina/                # git submodule: Sarina source (private repo)
@@ -113,8 +113,8 @@ Building requires an Arch Linux (or Arch container) environment with
 
 ```bash
 sudo pacman -S --needed archiso base-devel git
-git clone --recurse-submodules https://github.com/Artifex-Technologies/Chymaera_OS.git
-cd Chymaera_OS
+git clone --recurse-submodules https://github.com/Artifex-Technologies/Niflheim_OS.git
+cd Niflheim_OS
 
 # 1. Build local packages (Sarina, Calamares) as a regular user (makepkg refuses to run as root)
 ./scripts/build-local-packages.sh
@@ -123,8 +123,8 @@ cd Chymaera_OS
 sudo ./scripts/build.sh
 ```
 
-The resulting ISO is written to `out/`. Set `CHYMAERA_WORK_DIR` and
-`CHYMAERA_OUT_DIR` to put the build tree and output on a different filesystem
+The resulting ISO is written to `out/`. Set `NIFLHEIM_WORK_DIR` and
+`NIFLHEIM_OUT_DIR` to put the build tree and output on a different filesystem
 (CI uses this to reach a larger disk).
 
 ### Building and testing under WSL
@@ -152,7 +152,7 @@ the ISO and installs it, treat installation as unproven; the live session is the
 tested part. Install speed and the larger ISO that zstd compression produces have
 not been measured.
 
-Not yet done: the agent-assisted install flow, tool categorisation, Chymaera
+Not yet done: the agent-assisted install flow, tool categorisation, Niflheim
 branding (including the installer's), Omarchy's Quickshell shell, and testing on
 real GPU hardware. Expect rapid changes.
 
@@ -160,7 +160,7 @@ real GPU hardware. Expect rapid changes.
 
 [`packages/sarina`](packages/sarina) is a git submodule pointing at
 [Sarina](https://github.com/Artifex-Technologies/Sarina) (private, formerly
-Chymaera Code Agent) — a local-first, Python reimplementation of the Claude
+Niflheim Code Agent) — a local-first, Python reimplementation of the Claude
 Code agent architecture, runnable against local open models. It already
 ships its own Arch packaging (`packaging/arch/`) and a
 [`blackarch_compat`](https://github.com/Artifex-Technologies/Sarina/tree/main/blackarch_compat)
@@ -215,7 +215,7 @@ To pull in the latest Sarina code:
   is used yet ([docs/INSTALLER.md](docs/INSTALLER.md)).
 - [Try Omarchy for Windows](https://github.com/omacom/try-omarchy-windows) —
   runs Omarchy in QEMU on the Windows Hypervisor Platform from a prebuilt
-  image. A possible route to boot-testing Chymaera's ISO from Windows without
+  image. A possible route to boot-testing Niflheim's ISO from Windows without
   WSL; not evaluated for that yet.
 
 ## License

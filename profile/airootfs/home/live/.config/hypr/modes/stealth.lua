@@ -1,6 +1,6 @@
 -- The stealth look: a floating, rounded, translucent desktop with a top menu
 -- bar and a dock, meant to read as an ordinary macOS-style machine from across
--- a room. The bar and dock come from chymaera-desktop-mode; this file is the
+-- a room. The bar and dock come from niflheim-desktop-mode; this file is the
 -- compositor half.
 --
 -- Windows float instead of tile. Windows already open when you switch may keep

@@ -16,7 +16,7 @@
 
 set -euo pipefail
 
-say() { printf 'chymaera-install-cleanup: %s\n' "$*"; }
+say() { printf 'niflheim-install-cleanup: %s\n' "$*"; }
 
 # 1. Seed new users with the live user's desktop config. Both Hyprland looks and
 #    the Plasma fallback live under /home/live/.config; without this the

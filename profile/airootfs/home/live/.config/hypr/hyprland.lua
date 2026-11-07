@@ -1,4 +1,4 @@
--- Chymaera Hyprland session.
+-- Niflheim Hyprland session.
 --
 -- Structure and key layout follow Omarchy (MIT, Copyright (c) David Heinemeier
 -- Hansson; see THIRD_PARTY_NOTICES.md). Config is Lua because Hyprland has
@@ -7,8 +7,8 @@
 -- Two looks share this one session and switch in place, with no logout:
 --   omarchy  the tiling desktop (default)
 --   stealth  a floating, macOS-style desktop that draws no attention
--- Toggle with SUPER + F12, or `chymaera-desktop-mode`. The choice lives in
--- ~/.local/state/chymaera/desktop-mode.
+-- Toggle with SUPER + F12, or `niflheim-desktop-mode`. The choice lives in
+-- ~/.local/state/niflheim/desktop-mode.
 
 local home = os.getenv("HOME")
 local config_dir = home .. "/.config/hypr"
@@ -76,7 +76,7 @@ o.bind("SUPER + SPACE", "Launcher", "fuzzel")
 
 -- The stealth toggle. F12 is unused by Omarchy's defaults, so it cannot shadow
 -- a binding you already know.
-o.bind("SUPER + F12", "Toggle stealth desktop", "chymaera-desktop-mode toggle")
+o.bind("SUPER + F12", "Toggle stealth desktop", "niflheim-desktop-mode toggle")
 
 -- Screenshots, clipboard, media.
 o.bind("PRINT", "Screenshot region", "grim -g \"$(slurp)\" - | wl-copy")
@@ -92,7 +92,7 @@ o.bind("XF86AudioPrev", "Previous track", "playerctl previous", { locked = true 
 
 dofile(config_dir .. "/bindings/tiling.lua")
 
--- Session services. The bar and dock are started by chymaera-desktop-mode so
+-- Session services. The bar and dock are started by niflheim-desktop-mode so
 -- that they always match the current look.
 hl.on("hyprland.start", function()
   hl.exec_cmd("systemctl --user import-environment $(env | cut -d'=' -f 1)")
@@ -100,14 +100,14 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("uwsm-app -- hyprpolkitagent")
   hl.exec_cmd("uwsm-app -- mako")
   hl.exec_cmd("wl-paste --watch cliphist store")
-  hl.exec_cmd("chymaera-desktop-mode apply")
+  hl.exec_cmd("niflheim-desktop-mode apply")
 end)
 
 -- Load the current look. The value is checked against a fixed list, so the
 -- state file can never steer dofile() at an arbitrary path.
 local mode = "omarchy"
 local state_home = os.getenv("XDG_STATE_HOME") or (home .. "/.local/state")
-local state_file = io.open(state_home .. "/chymaera/desktop-mode", "r")
+local state_file = io.open(state_home .. "/niflheim/desktop-mode", "r")
 if state_file then
   local value = state_file:read("*l")
   state_file:close()

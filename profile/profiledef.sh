@@ -2,12 +2,12 @@
 # shellcheck disable=SC2034
 # Based on archiso's releng profile (archlinux/archiso configs/releng/profiledef.sh).
 
-iso_name="chymaera"
-iso_label="CHYMAERA_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
-iso_publisher="Chymaera OS <https://github.com/Artifex-Technologies/Chymaera_OS>"
-iso_application="Chymaera OS Live/Install Medium"
+iso_name="niflheim"
+iso_label="NIFLHEIM_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
+iso_publisher="Niflheim OS <https://github.com/Artifex-Technologies/Niflheim_OS>"
+iso_application="Niflheim OS Live/Install Medium"
 iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
-install_dir="chymaera"
+install_dir="niflheim"
 buildmodes=('iso')
 bootmodes=('bios.syslinux'
            'uefi.systemd-boot')
@@ -35,9 +35,9 @@ file_permissions=(
   ["/etc/sudoers.d/00-live-nopasswd"]="0:0:440"
   # Not a symlink and not created by any package, so without this line the
   # desktop-mode toggle would ship non-executable and SUPER + F12 would do nothing.
-  ["/usr/local/bin/chymaera-desktop-mode"]="0:0:755"
+  ["/usr/local/bin/niflheim-desktop-mode"]="0:0:755"
   # Calamares runs this in the target after unpackfs; see etc/calamares/settings.conf.
-  ["/usr/local/bin/chymaera-install-cleanup"]="0:0:755"
+  ["/usr/local/bin/niflheim-install-cleanup"]="0:0:755"
   # Trailing slash matters: mkarchiso only recurses (chown -fhR) when the path
   # ends in one. 1000:1000 is numeric because the live user does not exist at
   # build time -- sysusers.d/live.conf creates it at boot, pinned to uid 1000.

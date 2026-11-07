@@ -1,5 +1,5 @@
 # MacTahoe KDE theme by vinceliuice, vendored the same way as calamares:
-# not in Arch's repos, so it is built here into the local [chymaera] repo.
+# not in Arch's repos, so it is built here into the local [niflheim] repo.
 #
 # Pinned to a commit rather than a tag because upstream publishes no releases.
 # Bump _commit and sha256sums together when updating, and re-check that the
@@ -8,7 +8,7 @@
 # /usr directly and has no DESTDIR.
 #
 # Deliberately NOT installed: plasma/layout-templates/org.github.desktop.MacOS*
-# Those are the macOS panel layouts, and they include a dock. Chymaera keeps
+# Those are the macOS panel layouts, and they include a dock. Niflheim keeps
 # Plasma's stock bottom panel.
 
 _commit=cbf6a1f71b591d143184855d62f6272ce533e7c3

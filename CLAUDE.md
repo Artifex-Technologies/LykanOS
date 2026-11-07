@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-Chymaera OS is an Arch-based security distribution. This repo contains **no
+Niflheim OS is an Arch-based security distribution. This repo contains **no
 application code** — it is an [archiso](https://github.com/archlinux/archiso)
 profile plus the packaging and build glue that turns it into a bootable ISO.
 The only first-party software (Sarina) lives in a separate private repo,
@@ -45,7 +45,7 @@ sudo ./scripts/build.sh
 ./scripts/update-sarina.sh
 ```
 
-`scripts/build.sh` honours `CHYMAERA_WORK_DIR` and `CHYMAERA_OUT_DIR` for
+`scripts/build.sh` honours `NIFLHEIM_WORK_DIR` and `NIFLHEIM_OUT_DIR` for
 build hosts where `work/` and `out/` must sit on a different filesystem; CI
 uses these to move the build off the runner's small root disk.
 
@@ -71,7 +71,7 @@ numbered menu and then silently take option 1, which is often absurd
 (`tesseract-data-afr` for `tessdata`). New packages that introduce a provider
 choice need an explicit entry in the "explicit provider choices" section.
 
-**`profile/pacman.conf` contains a `@@CHYMAERA_REPO_DIR@@` placeholder.** It is
+**`profile/pacman.conf` contains a `@@NIFLHEIM_REPO_DIR@@` placeholder.** It is
 deliberate — `scripts/build.sh` substitutes an absolute path into a *work copy*
 so the checked-in file stays portable. Do not "fix" it to a real path.
 
@@ -108,12 +108,12 @@ image is not an installable root.** Calamares' `unpackfs` rsyncs
 
 - mkarchiso deletes everything in `/boot` from the image, so the target has no
   kernel, and the image's initramfs preset and `mkinitcpio.conf.d/archiso.conf`
-  are archiso's. `chymaera-install-cleanup` restores both. Do not remove it.
+  are archiso's. `niflheim-install-cleanup` restores both. Do not remove it.
 - That script keeps its own list of live-only files (sudoers, polkit, SDDM
   autologin, `kscreenlockerrc`, ...). Add any new live-only file to it as well
   as to `airootfs/`; nothing checks the two against each other.
 - The squashfs path in `modules/unpackfs.conf` contains `install_dir`
-  (`chymaera`, not archiso's `arch`). Change one and you must change the other.
+  (`niflheim`, not archiso's `arch`). Change one and you must change the other.
 - Every module in `settings.conf`'s sequence must be one the PKGBUILD actually
   builds. `-DSKIP_MODULES` removes `initramfs` among others; listing a skipped
   module breaks Calamares at startup. The Calamares config is **unrun**: it
@@ -190,7 +190,7 @@ churn here costs every future session context.
 If you change something on this list, say so in your commit message using the
 word `CONTRACT:` so the other side can grep for it.
 
-### What Chymaera consumes from Sarina
+### What Niflheim consumes from Sarina
 
 `packages/pkgbuilds/sarina-git/PKGBUILD` builds the submodule directly. It
 will break if any of these move or disappear — verified present as of the
@@ -228,7 +228,7 @@ by the Sarina owner: Sarina's git history still contains the old code. An ISO sh
 the owner before a publicly distributed ISO, and note that anyone fetching the
 submodule gets the history. A private/internal ISO is unaffected.
 
-### What Chymaera needs Sarina to provide (not built yet)
+### What Niflheim needs Sarina to provide (not built yet)
 
 The ISO deliberately ships a small tool core and defers the rest. These are
 the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:

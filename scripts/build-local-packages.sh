@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds every PKGBUILD under packages/pkgbuilds/ and adds the results to
-# the local [chymaera] pacman repo at repo/x86_64/. Run this as a regular
+# the local [niflheim] pacman repo at repo/x86_64/. Run this as a regular
 # user before scripts/build.sh (whenever a submodule like packages/sarina
 # has moved to a new commit, or a vendored PKGBUILD like calamares changes).
 #
@@ -37,6 +37,6 @@ for pkgbuild_dir in "$pkgbuilds_dir"/*/; do
   )
 done
 
-repo-add "$repo_dir/chymaera.db.tar.gz" "$repo_dir"/*.pkg.tar.zst
+repo-add "$repo_dir/niflheim.db.tar.gz" "$repo_dir"/*.pkg.tar.zst
 
 echo "Built and added to local repo: $repo_dir"

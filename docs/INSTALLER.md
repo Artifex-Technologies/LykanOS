@@ -1,6 +1,6 @@
 # Installer
 
-How Chymaera gets from the live USB onto a disk, why it is built that way, and
+How Niflheim gets from the live USB onto a disk, why it is built that way, and
 what has and has not been checked. Calamares is the installer; Omarchy was read
 as a reference and is not used here. See "What we took from Omarchy".
 
@@ -10,7 +10,7 @@ as a reference and is not used here. See "What we took from Omarchy".
 | --- | --- |
 | Calamares job sequence (`settings.conf`) | Written; modules checked against the Calamares 3.4.2 build. **Never run** |
 | `unpackfs` from the live squashfs | Written; path derived from mkarchiso. **Never run** |
-| `chymaera-install-cleanup` | Simulated against a mock target root (success, missing kernel, empty template). **Never run in a real install** |
+| `niflheim-install-cleanup` | Simulated against a mock target root (success, missing kernel, empty template). **Never run in a real install** |
 | zstd squashfs | Set in `profiledef.sh`. **ISO size and install time not measured** |
 | Calamares branding, partition and user defaults | Upstream defaults; see "Not done" |
 
@@ -26,11 +26,11 @@ install path to speed up.
 ```
 mkarchiso  ──►  airootfs.sfs  (zstd squashfs, inside the ISO)
                     │
-   live boot  ──►  mounted at /run/archiso/bootmnt/chymaera/x86_64/airootfs.sfs
+   live boot  ──►  mounted at /run/archiso/bootmnt/niflheim/x86_64/airootfs.sfs
                     │
    Calamares  ──►  partition, mount
                    unpackfs                (rsync the squashfs onto the disk)
-                   shellprocess@cleanup    (chymaera-install-cleanup, chrooted)
+                   shellprocess@cleanup    (niflheim-install-cleanup, chrooted)
                    machineid, locale, keyboard, fstab
                    initcpiocfg, initcpio   (regenerate the initramfs)
                    users, displaymanager, networkcfg, hwclock
@@ -54,7 +54,7 @@ Install time is dominated by two things, and both are addressed:
    the image with zstd instead of releng's xz. zstd decompresses several times
    faster; the price is a larger ISO.
 2. **Rebuilding the initramfs.** The live image carries archiso's initramfs
-   config, which compresses with `xz -9e`. `chymaera-install-cleanup` removes it,
+   config, which compresses with `xz -9e`. `niflheim-install-cleanup` removes it,
    so the installed system uses Arch's stock config: zstd, and a single
    `default` image with no fallback.
 
@@ -64,9 +64,9 @@ from a CI build before relying on this, and revert `airootfs_image_tool_options`
 to releng's xz line if the size is not acceptable. The original line is kept in
 a comment in `profiledef.sh`.
 
-### What `chymaera-install-cleanup` does, and why each step exists
+### What `niflheim-install-cleanup` does, and why each step exists
 
-`profile/airootfs/usr/local/bin/chymaera-install-cleanup` runs inside the target
+`profile/airootfs/usr/local/bin/niflheim-install-cleanup` runs inside the target
 straight after `unpackfs` and before anything that reads what it removes. Every
 step answers something specific about the live image not being an installable
 root:
@@ -122,11 +122,11 @@ Ideas worth borrowing, none adopted yet:
 - **First-boot provisioning.** Creating the user and doing slow setup after the
   first boot rather than inside the installer.
 - **Migrations.** Versioned scripts that carry installed systems forward across
-  releases. Chymaera has nothing equivalent.
+  releases. Niflheim has nothing equivalent.
 
-Why Chymaera does not use Omarchy's installer: it is built around Omarchy's own
+Why Niflheim does not use Omarchy's installer: it is built around Omarchy's own
 bootloader, snapshot and package layout, and an ISO that does not ship a
-base system for it to install onto. Chymaera keeps its own live ISO and
+base system for it to install onto. Niflheim keeps its own live ISO and
 Calamares. The longer reasoning is in [DESKTOP.md](DESKTOP.md).
 
 ## Not done
@@ -136,7 +136,7 @@ Calamares. The longer reasoning is in [DESKTOP.md](DESKTOP.md).
   path, the keyring step, GRUB on BIOS versus UEFI, and whether Calamares logs
   show the cleanup script running chrooted as expected.
 - **Branding.** `branding: default` is Calamares' sample, including its squid
-  logo. A `chymaera` branding directory (`branding.desc`, logo, slideshow,
+  logo. A `niflheim` branding directory (`branding.desc`, logo, slideshow,
   stylesheet) is still to do.
 - **Partition and user defaults.** Upstream's: ext4, GRUB, a default hostname of
   `derp-${cpu}`. Overriding `users.conf` means copying the whole upstream file,

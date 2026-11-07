@@ -12,7 +12,7 @@ Parts of the Hyprland session configuration are adapted from
 - `profile/airootfs/home/live/.config/hypr/modes/omarchy.lua` — values from
   Omarchy's `default/hypr/looknfeel.lua`.
 - The structure of `hyprland.lua`, the `o.bind` helper, and
-  `profile/airootfs/usr/local/bin/chymaera-desktop-mode` follow Omarchy's
+  `profile/airootfs/usr/local/bin/niflheim-desktop-mode` follow Omarchy's
   Hyprland Lua config and its `omarchy-hyprland-toggle` script.
 
 Omarchy is released under the MIT License:
