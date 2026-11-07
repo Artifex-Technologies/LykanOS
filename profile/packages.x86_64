@@ -176,9 +176,10 @@ slurp
 wl-clipboard
 brightnessctl
 playerctl
-xdg-utils
 libnotify
 noto-fonts-emoji
+# the task manager Yggdrasil's Ctrl+Shift+Esc opens (in a terminal)
+btop
 firefox
 
 # --- desktop networking/audio (releng is CLI-oriented; a desktop system
@@ -274,8 +275,8 @@ proxychains-ng
 responder
 
 # --- Sarina ---
-# sarina-git is built locally from the packages/sarina submodule into the
-# [niflheim] repo — see scripts/build-sarina-package.sh.
+# sarina-git comes from Labyrinth's signed repository ([labyrinth]), as the
+# desktop does (until 2026-10-08 it was built here from a copy of Sarina).
 git
 python
 sarina-git

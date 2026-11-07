@@ -3,20 +3,17 @@
 # an archlinux Docker container) as root or via sudo — mkarchiso requires it.
 #
 # What this does, in order:
-#   1. Ensures packages/sarina (the Sarina submodule) is checked out.
-#   2. Installs BlackArch's signing key + mirrorlist on this build host, via
+#   1. Installs BlackArch's signing key + mirrorlist on this build host, via
 #      BlackArch's own strap.sh, if not already present.
-#   3. Trusts Labyrinth OS's package signing key on this build host, by its
-#      full fingerprint: the desktop (Yggdrasil), Heimdall and Limbo come from
-#      Labyrinth's signed repository ([labyrinth] in profile/pacman.conf).
-#   4. Runs mkarchiso against profile/, with the [niflheim] repo path in
-#      pacman.conf substituted to an absolute path in a work copy (the
-#      checked-in profile/pacman.conf stays portable across checkouts), and
-#      the service links made there (default target, login screen, network).
+#   2. Trusts Labyrinth OS's package signing key on this build host, by its
+#      full fingerprint: the desktop (Yggdrasil), Sarina, Heimdall and Limbo
+#      come from Labyrinth's signed repository ([labyrinth] in profile/pacman.conf).
+#   3. Runs mkarchiso against a work copy of profile/, with the service links
+#      made there (default target, login screen, network).
 #
-# NOTE: this script must run as root (mkarchiso requires it), but makepkg
-# refuses to run as root — so run scripts/build-local-packages.sh as a
-# regular user FIRST to populate repo/x86_64/, then run this script.
+# Nothing is built locally: since 2026-11-07 every package comes from a
+# repository (until then sarina-git was built from a copy of Sarina kept in
+# packages/sarina, removed on 2026-10-08).
 #
 # Output: out/*.iso (or $NIFLHEIM_OUT_DIR/*.iso)
 #
@@ -43,15 +40,6 @@ if ! command -v mkarchiso >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "==> Checking submodules"
-# This script runs as root, but the repo may be owned by whatever user ran
-# scripts/build-local-packages.sh (makepkg refuses root, so that script runs
-# as a regular/build user) — git refuses to touch a repo it doesn't own
-# unless told it's safe. This script's only job is a throwaway root-level
-# build step, so trusting any directory here is fine.
-git config --global --add safe.directory '*'
-git -C "$repo_root" submodule update --init --recursive
-
 if [[ ! -f /etc/pacman.d/blackarch-mirrorlist ]]; then
   echo "==> Installing BlackArch keyring/mirrorlist on build host"
   curl -fsSL https://blackarch.org/strap.sh -o /tmp/blackarch-strap.sh
@@ -76,17 +64,10 @@ else
   echo "    already present"
 fi
 
-if ! compgen -G "$repo_root/repo/x86_64/niflheim.db*" >/dev/null; then
-  echo "error: local [niflheim] repo not found at repo/x86_64/" >&2
-  echo "  run scripts/build-local-packages.sh as a regular user first." >&2
-  exit 1
-fi
-
 echo "==> Preparing work copy of profile/"
 rm -rf "$profile_build_dir"
 mkdir -p "$work_dir"
 cp -r "$repo_root/profile" "$profile_build_dir"
-sed -i "s|@@NIFLHEIM_REPO_DIR@@|$repo_root/repo/x86_64|g" "$profile_build_dir/pacman.conf"
 
 # Service wiring as symlinks, made here rather than kept in git: mkarchiso copies airootfs over the pacstrapped root as it
 # is, and a checkout without symlinks (core.symlinks=false, as this repository's first checkout was) turns a committed link

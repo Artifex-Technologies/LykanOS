@@ -5,7 +5,7 @@ out/
 *.iso.sig
 *.sha256sum
 
-# local pacman repo built by scripts/build-agent-package.sh
+# a local pacman repo (none is built since 2026-11-07; kept ignored for old checkouts)
 /repo/
 
 # PKGBUILD build artifacts
