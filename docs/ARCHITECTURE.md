@@ -12,28 +12,33 @@
    forked. The ISO bakes in only a small hand-picked core (~27 packages in
    `profile/packages.x86_64`); everything beyond it is installed after the
    fact, agent-assisted, by Sarina. See "Tool delivery" below for why.
-3. **Desktop**: two sessions, selectable at the SDDM greeter. An
-   [Omarchy](https://github.com/omacom/omarchy)-derived Hyprland session with a
-   switchable macOS-style "stealth" look is the intended primary; KDE Plasma
-   (`plasma-meta` + `sddm` + Dolphin, Konsole, Kate, Ark, Okular) is the
-   fallback and is still the live medium's autologin session until Hyprland is
-   made the default. NetworkManager and PipeWire serve both
-   (`profile/packages.x86_64` layers these on top of releng's more
-   CLI/live-boot-oriented networking and audio stack). The Hyprland design and
-   what is unverified are in [DESKTOP.md](DESKTOP.md).
-4. **Installer**: [Calamares](https://codeberg.org/Calamares/calamares) as
-   the primary graphical, live-session installer (a graphical wizard suits a
-   live USB better than `archinstall`'s TUI). It's AUR-only, not in Arch's
-   official repos, so it's vendored at `packages/pkgbuilds/calamares` and
-   built the same way as Sarina, into the `[niflheim]` repo. It installs by
-   copying the live squashfs rather than running `pacstrap`, which is what
-   makes it quick and lets it work offline; its configuration ships in
-   `profile/airootfs/etc/calamares/`. How and why, and what is unverified, is
-   in [INSTALLER.md](INSTALLER.md). `archinstall` stays in `packages.x86_64`
-   (from releng) as a CLI/scripted alternative.
-5. **AI agent**: [Sarina](https://github.com/Artifex-Technologies/Sarina), a private
+3. **Desktop**: [Yggdrasil](https://github.com/Artifex-Technologies/Yggdrasil)
+   on Hyprland, the same desktop as Labyrinth OS, with greetd and Yggdrasil's
+   greeter as the login screen. Its packages come from Labyrinth OS's signed
+   package repository (`[labyrinth]`, last in both `pacman.conf` files,
+   `SigLevel = Required`), not from copies in this repo; Niflheim adds only
+   integration files (`profile/airootfs/usr/share/yggdrasil/integrations/`).
+   NetworkManager, BlueZ and PipeWire sit under it (`profile/packages.x86_64`
+   layers these on top of releng's more CLI/live-boot-oriented networking and
+   audio stack). Until 2026-11-07 the desktop was KDE Plasma with SDDM. Details
+   and what is unverified are in [DESKTOP.md](DESKTOP.md).
+4. **Installer**: Yggdrasil's installer (`yggdrasil-installer`, with its
+   install program `yggdrasil-install-system`), shared with Labyrinth OS and
+   configured by `niflheim-installer.conf`; Niflheim's own clean-up is
+   `niflheim-install-cleanup`. A graphical installer suits a live USB better
+   than `archinstall`'s TUI. It installs by copying the live squashfs rather
+   than running `pacstrap`, which is what makes it quick and lets it work
+   offline. It needs UEFI. How and why, and what is unverified, is in
+   [INSTALLER.md](INSTALLER.md). `archinstall` stays in `packages.x86_64`
+   (from releng) as a CLI/scripted alternative. Until 2026-11-07 the installer
+   was Calamares.
+5. **Security monitor**: [Heimdall](https://github.com/Artifex-Technologies/Heimdall)
+   (`heimdall-git` from `[labyrinth]`), shared with Labyrinth OS, with ClamAV;
+   switched on for the installed system. `ufw` is installed but left off. See
+   [DESKTOP.md](DESKTOP.md).
+6. **AI agent**: [Sarina](https://github.com/Artifex-Technologies/Sarina), a
    repo vendored as a git submodule at `packages/sarina`, packaged for the
-   ISO by `packages/pkgbuilds/sarina-git`.
+   ISO by `packages/pkgbuilds/sarina-git` into the local `[niflheim]` repo.
 
 ## Tool delivery: a small baked-in core, then Sarina
 
@@ -69,7 +74,7 @@ A hand-picked core covering recon, capture, wireless, password attacks, web,
 exploitation, reversing and forensics. Named packages, not groups — the size
 is predictable and the conflict surface is nearly nil. Verified against live
 repos: 837 packages resolved including dependencies, no provider menus, no
-conflicts, ~3.2 GiB compressed.
+conflicts, ~3.2 GiB compressed (measured with the earlier KDE desktop).
 
 The core exists for one reason worth stating plainly: **the live session has
 to be useful with no network.** Air-gapped client sites, SCIFs and offline
@@ -85,7 +90,7 @@ Everything past the core:
   installing accordingly, instead of guessing on the user's behalf.
 - **Categorisation.** BlackArch packages drop bare binaries into `/usr/bin`
   with no menu entry — the exact problem Kali's curated menus solve. Sarina
-  generates `.desktop` entries and Plasma menu categories as tools are added,
+  generates `.desktop` entries and start-menu categories as tools are added,
   so the organisation is maintained rather than hand-written here.
 
 Neither exists yet. Until they do, the core is all the distro ships, and that
@@ -107,8 +112,8 @@ Its role has shifted with the change above. It is no longer a gate on the ISO
 package list — that list is now small enough to verify directly:
 
 ```bash
-# on an Arch host with [blackarch] configured
-mapfile -t PKGS < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64 | grep -vx -e calamares -e sarina-git)
+# on an Arch host with [blackarch] and [labyrinth] configured
+mapfile -t PKGS < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64 | grep -vx sarina-git)
 pacman -Sp --print-format '%r/%n' "${PKGS[@]}"
 ```
 
@@ -126,9 +131,11 @@ checkout's `scripts/run_archiso.sh` boots a built ISO in QEMU.
 
 ## Live session
 
-The live medium autologins a passwordless `live` user straight into Plasma
-(Wayland). Everything in this section is live-medium only: the installer strips
-it from the installed system (`niflheim-install-cleanup`, see
+The live medium signs a passwordless `live` user in to the Yggdrasil session:
+greetd reads `etc/greetd/live.toml` there (through the drop-in
+`greetd.service.d/live.conf`), which adds an `initial_session` to the normal
+login screen. Everything in this section is live-medium only: the installer
+strips it from the installed system (`niflheim-install-cleanup`, see
 [INSTALLER.md](INSTALLER.md)). Getting here took three things that are each easy
 to get wrong:
 
@@ -137,11 +144,11 @@ archiso's releng profile ships a two-line `airootfs/etc/passwd` containing only
 root, and that is safe *for releng* because nothing in its package set needs a
 service account. It is not safe here. mkarchiso copies `airootfs/` over the
 pacstrapped root and never re-runs `systemd-sysusers`, so a hand-written
-`passwd` silently deletes all 38 accounts the image already has — including
-`sddm` (uid 954), without which the greeter cannot start.
+`passwd` silently deletes every account the image already has — including
+greetd's `greeter`, without which the login screen cannot start.
 `airootfs/etc/sysusers.d/live.conf` sidesteps this: `systemd-sysusers.service`
-runs at boot, before `sysinit.target`, and adds the account to the real
-`/etc/passwd`.
+runs at boot, before `sysinit.target`, and adds the account (in `wheel`,
+`video`, `audio` and `input`) to the real `/etc/passwd`.
 
 **`systemd-firstboot` has to be masked.** mkarchiso deliberately writes
 `/etc/machine-id` as the literal string `uninitialized` so systemd generates a
@@ -149,54 +156,35 @@ fresh id per boot. That also makes `ConditionFirstBoot=yes` true, so
 `systemd-firstboot` runs and interactively asks for timezone, locale, hostname
 and root password before anything graphical starts — on a live ISO, a dead end.
 Shipping a real machine-id does not help, because mkarchiso overwrites it. So
-`airootfs/etc/systemd/system/systemd-firstboot.service` is a symlink to
-`/dev/null`.
+`etc/systemd/system/systemd-firstboot.service` is a link to `/dev/null`, made by
+`scripts/build.sh` in the work copy of the profile together with the other
+service links (the default target, `display-manager.service` -> greetd,
+NetworkManager, Bluetooth, `pacman-init.service`). They are not kept in git:
+a checkout without symlinks turns a committed link into a text file holding its
+target, which systemd reads as a broken unit, and until 2026-11-07 four of
+them were such files.
 
 **Passwordless means every auth prompt must be removed, not just the login
 one.** The account has no password, so anything that asks for one strands the
 user. That is why the profile also ships `sudoers.d` and a polkit rule granting
-`wheel` unprompted access, and disables Plasma's screen locker via
-`/etc/xdg/kscreenlockerrc`. All three are live-medium only: Calamares writes
-the installed system's own policy, and `niflheim-install-cleanup` deletes the
-live files so none of this reaches it. That script keeps its own list of these
-files, so a new live-only file has to be added there too.
+`wheel` unprompted access. Both are live-medium only: the install program
+writes the installed system's own sudoers file, and `niflheim-install-cleanup`
+deletes the live files so none of this reaches it. That script keeps its own
+list of these files, so a new live-only file has to be added there too.
+Whether Yggdrasil's screen lock can strand the live session (the KDE setup
+turned its locker off for this reason) is not checked yet; see
+[DESKTOP.md](DESKTOP.md).
 
-## Desktop look
+**pacman's keyring is made at start-up.** mkarchiso builds the image without a
+keyring, so `pacman-init.service` creates one on the live medium and puts in
+the archlinux, blackarch and labyrinth keys. Without the Labyrinth key, `pacman`
+on the live medium could not read `[labyrinth]`.
 
-> **Direction change.** The primary desktop is moving from Plasma to an
-> Omarchy-derived Hyprland session with a switchable macOS-style "stealth" look;
-> Plasma stays as a fallback session. Design, status and what is unverified are
-> in [DESKTOP.md](DESKTOP.md). Until Hyprland is boot-tested and made the
-> autologin default, the description below is still what the live session ships.
-
-The live session ships a macOS-like desktop: [MacTahoe](https://github.com/vinceliuice/MacTahoe-kde)
-aurorae window decorations with traffic-light buttons on the left, matching
-colour schemes, Plasma desktop theme, SDDM greeter theme, Kvantum widget
-style, and the MacTahoe icon/cursor themes. Both light and dark variants
-install; the session defaults to dark and either can be selected in System
-Settings, which is why both are packaged rather than just one.
-
-Two deliberate departures from upstream:
-
-- **No dock.** The look-and-feel package ships
-  `layouts/org.kde.plasma.desktop-layout.js`, a macOS layout with a top bar
-  and a dock. It is not installed. Niflheim keeps Plasma's stock bottom
-  panel, so the theme is applied as individual settings (colour scheme,
-  decoration, desktop theme) rather than by setting `LookAndFeelPackage`,
-  which could pull the layout in with it.
-- **Button order is `XIA`, not upstream's `XAI`.** Upstream's look-and-feel
-  `defaults` and its own aurorae rc disagree with each other; `XIA` is
-  close/minimize/maximize, which is what macOS actually does and what the
-  decoration's `LeftButtons` says.
-
-The theme is vendored as two PKGBUILDs pinned to upstream commits, split so
-the 84 MB icon set can be dropped independently if the ISO needs to slim
-down -- everything else still works, just with Breeze icons.
-
-Defaults reach the live user through `airootfs/home/live/.config/`, chowned
-recursively by a `file_permissions` entry whose path ends in `/` (mkarchiso
-only recurses for those). The uid is hardcoded to 1000 to match the pin in
-`sysusers.d/live.conf`, because the account does not exist at build time.
+Files for the live user go in `airootfs/home/live/` (today only the installer
+launcher in `Desktop/`), chowned recursively by a `file_permissions` entry whose
+path ends in `/` (mkarchiso only recurses for those). The uid is hardcoded to
+1000 to match the pin in `sysusers.d/live.conf`, because the account does not
+exist at build time.
 
 ## Package flow for Sarina
 
@@ -238,7 +226,7 @@ happens to ship on it:
 - **Tool organization**: raw BlackArch packages tend to drop binaries into
   `/usr/bin` with no menu entry or categorization (the exact "installs
   things wherever" problem Kali's curated menus solve). Sarina is meant to
-  help generate/maintain `.desktop` entries and Plasma menu categories for
+  help generate/maintain `.desktop` entries and start-menu categories for
   newly added tools as the curated `blackarch-*` selection evolves, rather
   than that being purely a hand-maintained list here.
 - **Keeping the system current, safely**: helping evaluate `pacman -Syu` /
@@ -250,7 +238,7 @@ happens to ship on it:
 Neither of these exists yet — they're direction, not implementation. As
 they take shape they'll live in the Sarina repo itself (`packages/sarina`),
 with this repo consuming whatever surface it ends up exposing (a CLI
-command, a systemd timer, a Plasma applet, etc. — TBD).
+command, a systemd timer, a Yggdrasil integration file, etc. — TBD).
 
 ## Open questions / not yet decided
 
@@ -261,22 +249,9 @@ command, a systemd timer, a Plasma applet, etc. — TBD).
 - Sequencing: the lean ISO assumes Sarina will deliver tools post-install, and
   that capability does not exist yet. Until it does, Niflheim ships less
   tooling than it did as a concept. That is an accepted, temporary cost.
-- Calamares: the job sequence, `unpackfs` source and a post-unpack cleanup are
-  configured but **have never been run** (see [INSTALLER.md](INSTALLER.md)).
-  Still on upstream defaults: branding (`branding.desc`, logo, slideshow),
-  partition and user defaults, and the required-disk-space check. Whether to
-  package the config as a `niflheim-calamares-config` package or keep it in
-  `airootfs` (as now) is open; `airootfs` works because Calamares only runs on
-  the live medium.
-- Niflheim's own identity on top of the MacTahoe base: logo, a Niflheim
-  wallpaper, and a Calamares branding module. The desktop currently looks
-  like macOS, not like Niflheim.
-- The desktop wallpaper is still Plasma's default. Setting it means writing
-  `plasma-org.kde.plasma.desktop-appletsrc`, which also encodes the panel
-  layout -- hand-writing a partial one risks shipping a session with no
-  taskbar. The safe route is to configure it once in a booted VM and copy the
-  resulting file into `airootfs`.
-- Branding: ISO/desktop theming, wallpaper, SDDM theme, Plasma look-and-feel
-  package — none of this exists yet.
+- The installer has never been run on Niflheim (see [INSTALLER.md](INSTALLER.md)).
+- Niflheim's own look: only the accent colour exists (`niflheim-branding.conf`).
+  No logo (`/etc/os-release` has no `LOGO`), no Niflheim wallpaper, no boot menu
+  theme.
 - Concrete shape of Sarina's on-system maintenance role (see above) — CLI
-  tool, systemd timer, Plasma applet, or some combination.
+  tool, systemd timer, a Yggdrasil integration, or some combination.

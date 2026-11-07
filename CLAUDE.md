@@ -5,30 +5,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Push every commit as you make it; don't ask me first. Before pushing, check the diff names no host name, network address, SSID
 or MAC address.
 
-The desktop is moving from KDE/Calamares to Yggdrasil (decided 2026-11-07): read `docs/YGGDRASIL_MOVE.md` first. Until that is
-done, the KDE, SDDM and Calamares notes below describe what is in the profile today, not where it is going.
+Since 2026-11-07 the desktop is Yggdrasil on Hyprland, with greetd and Yggdrasil's installer, the same as Labyrinth OS's
+(until then KDE Plasma, SDDM and Calamares). `docs/YGGDRASIL_MOVE.md` records the move; its step 6, building the ISO and
+checking it in a VM, is still open.
 
 ## What this repo is
 
 Niflheim OS is an Arch-based security distribution. This repo contains **no
 application code** — it is an [archiso](https://github.com/archlinux/archiso)
 profile plus the packaging and build glue that turns it into a bootable ISO.
-The only first-party software (Sarina) lives in a separate private repo,
-vendored here as a submodule.
+Sarina lives in a separate repo, vendored here as a submodule. The desktop
+(Yggdrasil), Heimdall and `labyrinth-keyring` are packages from Labyrinth OS's
+signed repository (`[labyrinth]`); their code lives in the Yggdrasil, Heimdall
+and Labyrinth_OS repos, not here.
 
 Read `docs/ARCHITECTURE.md` before making design decisions; it records *why*
 the current structure exists (a small baked-in tool core over BlackArch
-category groups, Calamares over `archinstall`, etc.). `docs/DESKTOP.md` covers
-the Hyprland/Omarchy desktop and `docs/INSTALLER.md` the Calamares install flow;
+category groups, the desktop as packages rather than copies, a graphical
+installer over `archinstall`, etc.). `docs/DESKTOP.md` covers the Yggdrasil
+desktop and what Niflheim adds to it, `docs/INSTALLER.md` the install flow;
 both separate what was verified from what was not.
 
-## The build cannot run on this machine
+## Where the build runs
 
-The primary development machine is Windows, but `mkarchiso` requires Arch
-Linux and root. There is no way to build or smoke-test the ISO locally from
-Windows — changes are validated either in WSL with an Arch distro (clone into
-the ext4 side, **not** `/mnt/c`, or symlinks and permissions break) or by
-pushing and reading the GitHub Actions run.
+`mkarchiso` requires Arch Linux and root. Changes are validated on an Arch host
+or container (on Windows: WSL with an Arch distro, cloned into the ext4 side,
+**not** `/mnt/c`, or permissions break), or by pushing and reading the GitHub
+Actions run.
 
 Because of that, static verification matters more than usual here. Prefer
 simulating what a tool will do over assuming it works — see the
@@ -40,7 +43,7 @@ Two stages, and the root/non-root split is mandatory, not stylistic:
 `makepkg` refuses to run as root, and `mkarchiso` requires it.
 
 ```bash
-# 1. Build local packages (sarina-git, calamares) into repo/x86_64/
+# 1. Build local packages (sarina-git) into repo/x86_64/
 #    MUST be a regular user.
 ./scripts/build-local-packages.sh
 
@@ -51,9 +54,14 @@ sudo ./scripts/build.sh
 ./scripts/update-sarina.sh
 ```
 
-`scripts/build.sh` honours `NIFLHEIM_WORK_DIR` and `NIFLHEIM_OUT_DIR` for
-build hosts where `work/` and `out/` must sit on a different filesystem; CI
-uses these to move the build off the runner's small root disk.
+`scripts/build.sh` also installs BlackArch's key (BlackArch's `strap.sh`),
+trusts the Labyrinth package key by its full fingerprint
+(`C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`: fetched, fingerprint checked, then
+`pacman-key --lsign-key`) and makes the systemd service links in the work copy
+of the profile (see below). It honours `NIFLHEIM_WORK_DIR` and
+`NIFLHEIM_OUT_DIR` for build hosts where `work/` and `out/` must sit on a
+different filesystem; CI uses these to move the build off the runner's small
+root disk.
 
 There is no test suite, linter, or build step for this repo itself. Sarina has
 its own (`packages/sarina`, own CLAUDE.md) — do not run or modify those from
@@ -81,49 +89,57 @@ choice need an explicit entry in the "explicit provider choices" section.
 deliberate — `scripts/build.sh` substitutes an absolute path into a *work copy*
 so the checked-in file stays portable. Do not "fix" it to a real path.
 
-**`profile/airootfs/` contains real git symlinks (mode `120000`), and adding a
-new one from Windows is a trap.** This checkout has `core.symlinks=false`, so
-git stores them as plain files holding the target path and round-trips existing
-ones correctly. But a *new* one added with `git add` is recorded as a regular
-file — the ISO then ships a text file where systemd expects a symlink, and the
-unit silently does not work. To add one:
+**There are two `pacman.conf` files, and `[labyrinth]` is last in both.**
+`profile/pacman.conf` is for the build (with `[blackarch]` and the local
+`[niflheim]`); `profile/airootfs/etc/pacman.conf` is the live medium's and the
+installed system's (Arch's repos and `[labyrinth]` only). `[labyrinth]` has
+`SigLevel = Required` and is last on purpose: a package of the same name above
+it wins (`sarina-git` from `[niflheim]` at build time). Do not vendor copies of
+the `yggdrasil-*` packages, `heimdall-git` or `labyrinth-keyring` into
+`packages/pkgbuilds`: they come from `[labyrinth]`, so updates reach Niflheim
+and Labyrinth the same day.
 
-```bash
-printf '/dev/null' > path/to/unit.service                 # the target, no newline
-git update-index --add --cacheinfo 120000,"$(git hash-object -w path/to/unit.service)",path/to/unit.service
-git commit                                                 # NOT 'git add -A' first
-```
-
-Both halves matter. Skip the file and a later `git add -A` records its absence
-and silently drops the entry — that happened once already, in `28e9bef`. Skip
-the `update-index` and you get mode `100644`. Always confirm with
-`git ls-tree HEAD <path>` that the mode really is `120000`.
+**Do not commit symlinks under `profile/airootfs/`; add service links to
+`scripts/build.sh`.** This checkout has `core.symlinks=false`, so a committed
+link becomes a text file holding its target, and the ISO then ships a text file
+where systemd expects a symlink: a broken unit. Until 2026-11-07 the default
+target, the display manager, NetworkManager and the `systemd-firstboot` mask
+were such files. `scripts/build.sh` now makes every link in the work copy
+(`default.target`, `display-manager.service` -> greetd, NetworkManager,
+Bluetooth, `pacman-init.service`, the `systemd-firstboot` mask). A new enabled
+unit or mask goes there too.
 
 **Never ship `profile/airootfs/etc/passwd`, `shadow`, `group` or `gshadow`.**
 Releng does, and copying that pattern looks right — but mkarchiso overlays
 airootfs onto the pacstrapped root without re-running `systemd-sysusers`, so
-those files *replace* rather than merge. You would delete all 38 service
-accounts in the image, `sddm` included, and the greeter would never start. Add
-accounts through `airootfs/etc/sysusers.d/` instead.
+those files *replace* rather than merge. You would delete every service
+account in the image, greetd's `greeter` included, and the login screen would
+never start. Add accounts through `airootfs/etc/sysusers.d/` instead.
 
 **The installer copies the live squashfs; it does not pacstrap, and the live
-image is not an installable root.** Calamares' `unpackfs` rsyncs
-`airootfs.sfs` onto the disk (`profile/airootfs/etc/calamares/`, details in
-`docs/INSTALLER.md`). Four traps, each of which produces an install that
-"succeeds" and then fails later:
+image is not an installable root.** Yggdrasil's `yggdrasil-install-system`
+(shared with Labyrinth OS; its code is in the Yggdrasil repo, not here) runs
+`unsquashfs` on `airootfs.sfs` and then Niflheim's clean-up inside the new
+system (`niflheim-installer.conf` names it; details in `docs/INSTALLER.md`).
+Traps, each of which produces an install that "succeeds" and then fails later:
 
 - mkarchiso deletes everything in `/boot` from the image, so the target has no
   kernel, and the image's initramfs preset and `mkinitcpio.conf.d/archiso.conf`
   are archiso's. `niflheim-install-cleanup` restores both. Do not remove it.
-- That script keeps its own list of live-only files (sudoers, polkit, SDDM
-  autologin, `kscreenlockerrc`, ...). Add any new live-only file to it as well
-  as to `airootfs/`; nothing checks the two against each other.
-- The squashfs path in `modules/unpackfs.conf` contains `install_dir`
-  (`niflheim`, not archiso's `arch`). Change one and you must change the other.
-- Every module in `settings.conf`'s sequence must be one the PKGBUILD actually
-  builds. `-DSKIP_MODULES` removes `initramfs` among others; listing a skipped
-  module breaks Calamares at startup. The Calamares config is **unrun**: it
-  has only been checked statically and against a mock root.
+- That script keeps its own list of live-only files (sudoers, polkit, greetd's
+  `live.toml` and its drop-in, the installer launcher and integration file,
+  ...). Add any new live-only file to it as well as to `airootfs/`; nothing
+  checks the two against each other.
+- The program finds the image at `/run/archiso/bootmnt/<ID>/x86_64/airootfs.sfs`,
+  with `ID` from `/etc/os-release` (`niflheim`), which must equal `install_dir`
+  in `profiledef.sh` (not archiso's `arch`). Change one and you must change the
+  other, or set `medium` in `niflheim-installer.conf`.
+- The program installs on UEFI computers only. The medium also boots BIOS
+  (syslinux); there only `archinstall` installs.
+- Changes to the install steps themselves belong in Yggdrasil
+  (`packages/installer`, its `docs/INSTALLER.md`); Niflheim's part is the
+  integration file and the clean-up. Nothing of it has been run on Niflheim
+  yet.
 
 **`profile/` is a fork of archiso's `releng` profile**, kept deliberately close
 to upstream. When something is missing, copy it verbatim from
@@ -139,15 +155,22 @@ then panics at boot.
 `ubuntu-latest`. Two constraints shape it:
 
 - **Disk.** The runner's `/` has ~14 GB free, nowhere near enough for a
-  BlackArch + Plasma pacstrap. The job mounts the runner's ~70 GB `/mnt`
+  BlackArch + desktop pacstrap. The job mounts the runner's ~70 GB `/mnt`
   scratch disk into the container and puts the work tree, pacman cache, and
   ISO output there. When `/` or `/mnt` fills, the runner agent is killed and
   GitHub uploads **no log at all** for the job — a 22-byte empty zip. The
   build step therefore prints free space every 30s so the log tail always
   shows which filesystem ran out. Keep that watcher.
-- **Private submodule.** `packages/sarina` is a private repo, so
-  `actions/checkout` needs the `SARINA_REPO_TOKEN` secret (Contents: read on
-  *both* repos, since it replaces the token for the whole checkout).
+- **Submodule token.** `actions/checkout` uses the `SARINA_REPO_TOKEN` secret
+  when it is set (Contents: read on *both* repos, since it replaces the token
+  for the whole checkout), from when Sarina was a private repo. Sarina is
+  public now, so the default token is enough.
+
+**No run has produced an ISO since the repository moved here (2026-10-08).**
+Every run stops at "Build local packages": the scripts are stored without the
+executable bit (`sudo: ./scripts/build-local-packages.sh: command not found`),
+and the tree has no gitlink for `packages/sarina` (only `.gitmodules`), so the
+script would stop next at "submodule looks empty".
 
 Diagnosing a failed run without `gh` installed: the REST API works with a PAT
 carrying Actions: read. An empty log zip plus steps with `conclusion: None`
@@ -166,17 +189,18 @@ Two constraints follow from that, and both are easy to break:
   live USB works air-gapped. Do not thin it out on size grounds without
   saying what offline capability is being given up.
 - **Everything past the core belongs to Sarina**, including generating
-  `.desktop` entries and Plasma menu categories for newly installed tools.
+  `.desktop` entries and start-menu categories for newly installed tools.
   Neither capability exists yet. Do not add tools to `packages.x86_64` to
   work around that gap — it makes the eventual agent-side work harder to
   justify and quietly re-creates the problem the categories caused.
 
 Verify any change to the package list by resolving it against live repos on
-an Arch host with `[blackarch]` configured — this catches conflicts and
-provider menus that CI would only surface hours later, or not at all:
+an Arch host with `[blackarch]` and `[labyrinth]` configured — this catches
+conflicts and provider menus that CI would only surface hours later, or not at
+all:
 
 ```bash
-mapfile -t PKGS < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64 | grep -vx -e calamares -e sarina-git)
+mapfile -t PKGS < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64 | grep -vx sarina-git)
 pacman -Sp --print-format '%r/%n' "${PKGS[@]}"   # must exit 0, print no provider menu
 ```
 
@@ -241,9 +265,10 @@ the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
 
 1. **Install-time tool selection** — ask what the machine is for, install
    accordingly, rather than a category guess baked into the ISO.
-2. **Categorisation** — generate `.desktop` entries and Plasma menu
+2. **Categorisation** — generate `.desktop` entries and start-menu
    categories for tools that drop bare binaries into `/usr/bin`. Measured on
-   the 2026-09-12 ISO, so this is the real shape of the problem, not a guess:
+   the 2026-09-12 ISO (the KDE one), so this is the real shape of the problem,
+   not a guess:
 
    | | Count |
    | --- | --- |
@@ -257,13 +282,15 @@ the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
    desktop they are invisible — you must already know they exist and open a
    terminal. **Remapping** entries: BlackArch packages that do ship one use
    non-standard `X-BlackArch-*` categories (`burpsuite` declares
-   `X-BlackArch-Fuzzer;X-BlackArch-Proxy;X-BlackArch-Scanner;X-BlackArch-Webapp`),
-   which Plasma does not recognise, so they land in **Lost & Found**.
+   `X-BlackArch-Fuzzer;X-BlackArch-Proxy;X-BlackArch-Scanner;X-BlackArch-Webapp`).
+   Yggdrasil's start menu makes its folders from the freedesktop main
+   categories only (`packages/panel/src/apps.rs` in Yggdrasil), so those land
+   in its **Other** folder; it has no Security folder.
 
-   A useful target is the `X-BlackArch-*` → Plasma menu mapping plus synthesised
-   entries that launch CLI tools in a terminal. Note the ISO now themes Plasma
-   with MacTahoe icons, so generated entries should reference icon names that
-   theme actually provides, or they will show a generic fallback.
+   A useful target is an `X-BlackArch-*` → freedesktop category mapping plus
+   synthesised entries that launch CLI tools in a terminal (Ghostty). The image's
+   icon theme is Liki (`liki-icon-theme`), so generated entries should reference
+   icon names it provides, or they will show a generic fallback.
 3. **Data analysis** — the reason the agent is in the OS at all: making sense
    of scan and capture output in place.
 4. **`blackarch_compat` against a real Docker daemon** — currently
@@ -272,25 +299,24 @@ the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
 5. **Crash diagnosis** — a `systemd-coredump` watcher that raises a "Process
    crashed" notification and hands the PID, binary and signal to Sarina with a
    skill describing how to investigate (coredump, Proton/Wine log, `journalctl`,
-   GPU driver state). Copies Omarchy's `omarchy-crash-watch` /
+   GPU driver state). The design follows Omarchy's `omarchy-crash-watch` /
    `omarchy-agent-crash`; see `docs/DESKTOP.md`. Sarina proposes, a human applies.
 6. **Proton VPN lifecycle** — install `proton-vpn-gtk-app` (Arch `extra`) on
    request, and after `pacman -Syu` report what changed for the VPN. The kill
    switch must live in nftables or NetworkManager, *not* in Sarina, so a crashed
    or injected agent cannot leave the VPN open. Network-config changes are
    proposals only.
-7. **Agent manager** — feed and read Omarchy's agents panel: write
-   `~/.local/state/omarchy/agents/usage/sarina.json` (any file there gets a tab),
-   read the other agents' records for a unified usage view, and only later
-   launch or supervise other agents, proposal-first with human approval and
-   Heimdall watching. Omarchy starts agents in auto-approve modes, so an
-   unsupervised launcher is a privilege-escalation path. See `docs/DESKTOP.md`.
-   **Built on the Sarina side** as `sarina fleet-usage`, `fleet-status` and
-   `fleet-launch` (Sarina's `docs/ECOSYSTEM.md` §1); this repo ships the panel
-   collector `/usr/share/omarchy/bin/omarchy-agent-usage-sarina` from the
-   `sarina-git` PKGBUILD. It does nothing until the `packages/sarina` pointer
-   reaches a Sarina commit that has those commands, and the panel needs
-   Omarchy's shell, which the image does not ship yet.
+7. **Agent manager** — read the other agents' usage records for a unified
+   view, and only later launch or supervise other agents, proposal-first with
+   human approval and Heimdall watching (an unsupervised launcher that starts
+   agents in auto-approve modes is a privilege-escalation path). **Built on the
+   Sarina side** as `sarina fleet-usage`, `fleet-status` and `fleet-launch`
+   (Sarina's `docs/ECOSYSTEM.md` §1). The display was to be Omarchy's agents
+   panel, which is not coming now that the desktop is Yggdrasil; the
+   `sarina-git` PKGBUILD still installs the Omarchy collector
+   `/usr/share/omarchy/bin/omarchy-agent-usage-sarina`, which nothing on the
+   image runs. Yggdrasil's way to show it would be a `bar-item` integration
+   file (Yggdrasil's `docs/INTEGRATIONS.md`). See `docs/DESKTOP.md`.
 
 ### Advancing the submodule
 

@@ -1,41 +1,13 @@
 # Third-party notices
 
-## Omarchy
+Files in this repository that are adapted from other projects, and their licences.
 
-Parts of the Hyprland session configuration are adapted from
-[Omarchy](https://github.com/omacom/omarchy), pinned to tag `v4.0.4`
-(`c668141`):
+Nothing in the tree today is adapted from another project's code under terms that need a notice here. `profile/` is a
+fork of archiso's `releng` profile (archiso is GPL-3.0-or-later; this repository is GPL-3.0): `profiledef.sh`,
+`packages.x86_64`, `pacman.conf` and the mkinitcpio files say so in their headers, and `syslinux/` and `efiboot/` are
+releng's boot menus with Niflheim's names. The desktop (Yggdrasil), Heimdall and Sarina are installed as packages, each with its own
+licence file.
 
-- `profile/airootfs/home/live/.config/hypr/bindings/tiling.lua` — Omarchy's
-  `default/hypr/bindings/tiling.lua`, with lines that call Omarchy-only helper
-  scripts removed.
-- `profile/airootfs/home/live/.config/hypr/modes/omarchy.lua` — values from
-  Omarchy's `default/hypr/looknfeel.lua`.
-- The structure of `hyprland.lua`, the `o.bind` helper, and
-  `profile/airootfs/usr/local/bin/niflheim-desktop-mode` follow Omarchy's
-  Hyprland Lua config and its `omarchy-hyprland-toggle` script.
-
-Omarchy is released under the MIT License:
-
-```
-Copyright (c) David Heinemeier Hansson
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-```
+Until 2026-11-07 parts of the Hyprland session configuration and the `niflheim-desktop-mode` script were adapted from
+[Omarchy](https://github.com/omacom/omarchy) (MIT, Copyright (c) David Heinemeier Hansson, tag `v4.0.4`). They were
+removed when the desktop moved to Yggdrasil (commit 3193bca) and remain only in the git history before it.

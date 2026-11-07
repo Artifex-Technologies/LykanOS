@@ -7,14 +7,13 @@ penetration testing, combining:
 - **[BlackArch](https://github.com/BlackArch/blackarch)** tooling, available as
   a repo but not bulk-installed: the ISO ships a small offline-usable core and
   Sarina installs the rest on demand
-- **[Omarchy](https://github.com/omacom/omarchy)** as the model for the
-  desktop: a keyboard-driven Hyprland session with Omarchy's keybindings, plus
-  a second "stealth" look that imitates a macOS desktop, switched in place with
-  `SUPER + F12`. Omarchy is an upstream we follow, not a fork: see
-  [Built on Omarchy](#built-on-omarchy)
-- **[KDE Plasma](https://github.com/kde/plasma-desktop)** as the current default
-  session and the fallback one, themed macOS-like (MacTahoe, light and dark)
-  with a conventional bottom taskbar rather than a dock
+- **[Yggdrasil](https://github.com/Artifex-Technologies/Yggdrasil)** as the
+  desktop: a desktop environment written in Rust, on Hyprland, with its own top
+  bar, dock, Settings, file manager, app store, lock and login screens and
+  installer. It is the desktop of [Labyrinth OS](https://github.com/Artifex-Technologies/Labyrinth_OS),
+  and Niflheim installs the same packages. See [The desktop](#the-desktop)
+- **[Heimdall](https://github.com/Artifex-Technologies/Heimdall)**, the security
+  monitor Labyrinth OS uses too, switched on for the installed system
 - **[Sarina](https://github.com/Artifex-Technologies/Sarina)**, an AI agent integrated
   directly into the OS — for choosing and organising tooling, and for making
   sense of scan and capture output in place
@@ -31,8 +30,8 @@ predictable release/support cadence. But Kali isn't developed in the open on
 GitHub, and BlackArch (which *is* on GitHub) ships its full tool catalog by
 default, which can make the base system less stable for daily use. Niflheim
 aims to sit between them: an openly developed, Arch-based system with a
-deliberately small default tool set, a polished desktop (Hyprland, with KDE
-Plasma as the fallback session), and an AI agent built in to help with recon, scripting, analysis, and general system
+deliberately small default tool set, a polished desktop (Yggdrasil on
+Hyprland), and an AI agent built in to help with recon, scripting, analysis, and general system
 tasks.
 
 ## How tooling is delivered
@@ -50,38 +49,38 @@ client sites and offline forensics are where a live USB earns its keep, and
 they are the one thing an install-on-demand model cannot serve.
 
 Everything past that core is Sarina's job: asking what the machine is for,
-installing accordingly, and generating the `.desktop` entries and Plasma menu
+installing accordingly, and generating the `.desktop` entries and start-menu
 categories that BlackArch packages don't ship. Those capabilities are still
 being built.
 
-## Built on Omarchy
+## The desktop
 
-[Omarchy](https://github.com/omacom/omarchy) (MIT, by David Heinemeier Hansson)
-is the reference for Niflheim's desktop, and where its packages fit they are
-consumed as-is rather than copied, so its updates keep flowing. What is in the
-tree today:
+I decided on 2026-11-07 that Niflheim uses the same desktop as Labyrinth OS: Yggdrasil on Hyprland. Until 2026-11-07 the
+desktop was KDE Plasma with SDDM, the MacTahoe theme and an Omarchy-style Hyprland session beside it; all of that is gone
+from the profile.
 
-- A Hyprland session, installed beside Plasma and selectable at the login
-  screen, using Omarchy's window and workspace keybindings verbatim
-  ([THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) has the attribution and
-  licence).
-- Two looks in one session, toggled with `SUPER + F12` and no logout: the
-  default tiling look, and a floating, rounded macOS-style "stealth" look with a
-  menu bar and dock. Boot-tested in a VM.
+- **Login screen:** greetd runs Yggdrasil's greeter (`yggdrasil-greeter`, in `cage`). On the live medium greetd signs the
+  live user in by itself.
+- **Programs:** Yggdrasil's top bar and dock, Settings (Wi-Fi, Bluetooth, sound, displays and more), Minos (files),
+  Agora (the app store), the lock screen, the password box, clipboard history, the colour picker, the calculator, spell
+  checking and the installer. The terminal is Ghostty (Super + Return), the browser Firefox, and saved passwords are kept
+  in GNOME Keyring.
+- **Where it comes from:** the `yggdrasil-*` packages, `heimdall-git` and `labyrinth-keyring` come from Labyrinth OS's
+  signed package repository (`[labyrinth]`, the GitHub release `packages` of Labyrinth_OS), built for any 64-bit x86 CPU.
+  It is listed last, with `SigLevel = Required`, both for building the ISO and on the installed system, so `pacman -Syu`
+  brings desktop updates the same day Labyrinth gets them.
+- **What Niflheim adds:** three integration files Yggdrasil reads: the accent colour, the installer's settings and
+  Heimdall.
 
-Planned, not built: Omarchy's Quickshell shell, which brings its screensaver,
-theme system and third-party lock screens, and Omarchy's agents panel showing
-Sarina's usage beside Claude Code and the other agents. Niflheim keeps its own
-live ISO, installer, system identity and boot configuration rather than taking
-Omarchy's `omarchy-settings` package, which overwrites `/etc/os-release` on
-every upgrade.
+Details, and what is not checked yet, are in [docs/DESKTOP.md](docs/DESKTOP.md).
 
-Niflheim does not use an AUR helper. AUR-only software we need (Calamares) is
-vendored as a PKGBUILD and built into Niflheim's own repo. Omarchy installs AUR
-packages with `yay`; whether Niflheim adopts that is undecided.
+## Installing
 
-The design, measurements and everything still unverified are in
-[docs/DESKTOP.md](docs/DESKTOP.md).
+The live session has an **Install Niflheim** launcher (start menu, and the live user's Desktop folder). It opens
+Yggdrasil's installer window, whose install program (`yggdrasil-install-system`) is shared with Labyrinth OS: language,
+keyboard, time zone, disk (optionally encrypted), account. It copies the live system to the disk, so it needs no network.
+It needs a UEFI computer; the medium itself also starts on BIOS computers, where `archinstall` (command line, online) is
+the way to install. See [docs/INSTALLER.md](docs/INSTALLER.md).
 
 ## Repository layout
 
@@ -90,15 +89,15 @@ Niflheim_OS/
 ├── profile/                  # archiso profile used to build the live/install ISO
 │   ├── profiledef.sh         # ISO metadata (name, label, boot modes, etc.)
 │   ├── packages.x86_64       # package list installed into the ISO/target system
-│   ├── pacman.conf           # repo config: core/extra + [blackarch] + [niflheim]
-│   └── airootfs/             # files overlaid onto the live system's root (incl. etc/calamares/)
+│   ├── pacman.conf           # repos for the build: core/extra/multilib + [blackarch] + [niflheim] + [labyrinth]
+│   └── airootfs/             # files overlaid onto the live system's root (greetd, Yggdrasil integration files, the
+│                             #   installed system's pacman.conf, niflheim-install-cleanup)
 ├── packages/
-│   ├── sarina/                # git submodule: Sarina source (private repo)
+│   ├── sarina/               # git submodule: Sarina source
 │   └── pkgbuilds/
-│       ├── sarina-git/        # PKGBUILD building packages/sarina locally
-│       └── calamares/         # vendored AUR PKGBUILD (graphical installer)
+│       └── sarina-git/       # PKGBUILD building packages/sarina locally
 ├── repo/                     # local pacman repo built from pkgbuilds (gitignored contents)
-├── docs/                     # ARCHITECTURE.md, DESKTOP.md (Hyprland/Omarchy), INSTALLER.md (Calamares)
+├── docs/                     # ARCHITECTURE.md, DESKTOP.md (Yggdrasil), INSTALLER.md, YGGDRASIL_MOVE.md
 ├── scripts/                  # Build/dev helper scripts
 ├── CLAUDE.md                 # Guidance for AI agents working in this repo
 └── .github/workflows/        # CI: build (and eventually publish) the ISO
@@ -116,52 +115,52 @@ sudo pacman -S --needed archiso base-devel git
 git clone --recurse-submodules https://github.com/Artifex-Technologies/Niflheim_OS.git
 cd Niflheim_OS
 
-# 1. Build local packages (Sarina, Calamares) as a regular user (makepkg refuses to run as root)
+# 1. Build the local package (Sarina) as a regular user (makepkg refuses to run as root)
 ./scripts/build-local-packages.sh
 
 # 2. Build the ISO as root (mkarchiso requires it)
 sudo ./scripts/build.sh
 ```
 
+`scripts/build.sh` also installs BlackArch's key, trusts the Labyrinth package key (fetched, then checked against its full
+fingerprint before it is signed locally) and makes the systemd service links in a work copy of the profile.
+
 The resulting ISO is written to `out/`. Set `NIFLHEIM_WORK_DIR` and
 `NIFLHEIM_OUT_DIR` to put the build tree and output on a different filesystem
 (CI uses this to reach a larger disk).
 
-### Building and testing under WSL
+### Building under WSL
 
-Development happens on Windows, so WSL2 with an Arch distribution is the
-normal way to build and boot-test. Two things matter:
+On Windows, WSL2 with an Arch distribution works. Two things matter:
 
 - **Clone into the WSL filesystem** (`~/`), never `/mnt/c`. Windows drives
-  don't preserve the symlinks in `profile/airootfs/` or Unix permissions, and
-  a build tree there would also try to sync to OneDrive.
+  don't preserve Unix permissions, and a build tree there would also try to
+  sync to OneDrive.
 - **`makepkg` refuses to run as root**, so create an ordinary user for stage 1
   even though WSL logs you in as root by default.
 
 ## Status
 
-Early, but building. The archiso profile, BlackArch repo wiring, KDE Plasma
-package set, Calamares packaging and Sarina packaging are in place, and the
-package set resolves cleanly (837 packages, no conflicts). The Hyprland session
-is boot-tested in a VM.
+Early. Since 2026-11-07 the profile installs Yggdrasil instead of KDE Plasma, and the package list resolves against Arch,
+BlackArch and `[labyrinth]` (checked when the change was made).
 
-The installer is configured but **has never been run**: Calamares copies the live
-squashfs to disk instead of rebuilding the system, which is meant to make it fast
-and work offline ([docs/INSTALLER.md](docs/INSTALLER.md)). Until someone boots
-the ISO and installs it, treat installation as unproven; the live session is the
-tested part. Install speed and the larger ISO that zstd compression produces have
-not been measured.
+**No ISO of this setup has been built or booted yet.** The GitHub workflow builds an ISO on every push to `main` that
+touches `profile/`, `scripts/` or `packages/`, but every run since the repository moved here (2026-10-08) has stopped at
+the local-package step, before `mkarchiso`. Booting the ISO in a VM, installing and checking the result is step 6 of
+[docs/YGGDRASIL_MOVE.md](docs/YGGDRASIL_MOVE.md), and it is still open.
 
-Not yet done: the agent-assisted install flow, tool categorisation, Niflheim
-branding (including the installer's), Omarchy's Quickshell shell, and testing on
-real GPU hardware. Expect rapid changes.
+The installer has never been run on Niflheim. The same install program has installed Labyrinth OS in VMs. Install speed
+and the larger ISO that zstd compression produces have not been measured.
+
+Not yet done: the agent-assisted install flow, tool categorisation, Niflheim's own look beyond the accent colour (logo,
+wallpaper, boot menu), and testing on real GPU hardware. Expect rapid changes.
 
 ## Sarina
 
 [`packages/sarina`](packages/sarina) is a git submodule pointing at
-[Sarina](https://github.com/Artifex-Technologies/Sarina) (private, formerly
-Niflheim Code Agent) — a local-first, Python reimplementation of the Claude
-Code agent architecture, runnable against local open models. It already
+[Sarina](https://github.com/Artifex-Technologies/Sarina) (formerly
+Niflheim Code Agent) — a local-first agent written in Go, with an optional
+Python helper, runnable against local open models. It already
 ships its own Arch packaging (`packaging/arch/`) and a
 [`blackarch_compat`](https://github.com/Artifex-Technologies/Sarina/tree/main/blackarch_compat)
 harness built specifically for *this* distro: it installs BlackArch's
@@ -175,7 +174,7 @@ Sarina's intended role in the running system, none of which exists yet:
 
 - **Guided install** — ask what the machine is for and install tooling to
   match, instead of shipping a guess.
-- **Organisation** — generate `.desktop` entries and Plasma menu categories
+- **Organisation** — generate `.desktop` entries and start-menu categories
   for tools that drop bare binaries into `/usr/bin`, which is the problem
   Kali's curated menus solve by hand.
 - **Analysis** — read scan, capture and log output in place and summarise it,
@@ -191,13 +190,20 @@ To pull in the latest Sarina code:
 
 ## References
 
-- [Calamares](https://codeberg.org/Calamares/calamares) — the primary
-  graphical, live-session installer (AUR-only; vendored at
-  `packages/pkgbuilds/calamares`, configured in
-  `profile/airootfs/etc/calamares/`). GitHub's copy is archived; Codeberg is
-  where development moved.
+- [Yggdrasil](https://github.com/Artifex-Technologies/Yggdrasil) — the desktop
+  environment (its README lists the programs and keyboard shortcuts;
+  `docs/INTEGRATIONS.md` and `docs/INSTALLER.md` describe what Niflheim plugs
+  into).
+- [Labyrinth OS](https://github.com/Artifex-Technologies/Labyrinth_OS) — the
+  sister system whose signed package repository (`docs/PACKAGE_REPO.md` there)
+  supplies the desktop, Heimdall and the Labyrinth key.
+- [Hyprland](https://hyprland.org) — the compositor Yggdrasil's session runs on.
+- [greetd](https://sr.ht/~kennylevinsen/greetd/) — the login manager that
+  starts Yggdrasil's greeter.
+- [Heimdall](https://github.com/Artifex-Technologies/Heimdall) — the security
+  monitor.
 - [archinstall](https://github.com/archlinux/archinstall) — Arch's guided
-  CLI installer; kept available as a scripted alternative to Calamares.
+  CLI installer; kept available as a scripted alternative to the graphical installer.
 - [archiso](https://github.com/archlinux/archiso) — the tool used to build
   this project's live/install ISO (see `profile/`).
 - [archlinux/devtools](https://github.com/archlinux/devtools) — official
@@ -205,18 +211,8 @@ To pull in the latest Sarina code:
   package builds here.
 - [BlackArch](https://github.com/BlackArch/blackarch) — source of the
   security tooling repo and package catalog.
-- [KDE Plasma Desktop](https://github.com/kde/plasma-desktop) — the primary
-  desktop environment (installed via the `plasma-meta` group).
 - [Sarina](https://github.com/Artifex-Technologies/Sarina) — the AI agent
-  integrated into the OS (private repo, submodule at `packages/sarina`).
-- [Omarchy](https://github.com/omacom/omarchy) — the Hyprland desktop this
-  project's session, keybindings and look-switching are modelled on (MIT). Its
-  install scripts were read as a reference for the installer; nothing from them
-  is used yet ([docs/INSTALLER.md](docs/INSTALLER.md)).
-- [Try Omarchy for Windows](https://github.com/omacom/try-omarchy-windows) —
-  runs Omarchy in QEMU on the Windows Hypervisor Platform from a prebuilt
-  image. A possible route to boot-testing Niflheim's ISO from Windows without
-  WSL; not evaluated for that yet.
+  integrated into the OS (submodule at `packages/sarina`).
 
 ## License
 

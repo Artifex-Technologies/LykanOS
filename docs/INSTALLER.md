@@ -1,150 +1,135 @@
 # Installer
 
-How Niflheim gets from the live USB onto a disk, why it is built that way, and
-what has and has not been checked. Calamares is the installer; Omarchy was read
-as a reference and is not used here. See "What we took from Omarchy".
+How Niflheim gets from the live USB onto a disk, why it is built that way, and what has and has not been checked.
+
+Since 2026-11-07 Niflheim installs with Yggdrasil's installer: the window `yggdrasil-installer` and its install program
+`yggdrasil-install-system`, both in the `yggdrasil-installer` package from `[labyrinth]`. It is the same program Labyrinth
+OS installs with. I moved it from Labyrinth to Yggdrasil on 2026-11-07 (Yggdrasil 0c54aa0, Labyrinth 2b18499) so both
+systems share one installer instead of keeping copies. What is Niflheim's own is one integration file and one clean-up
+script. Until 2026-11-07 the installer was Calamares (a vendored PKGBUILD and a config that had never been run); it is
+removed.
 
 ## Status
 
 | Piece | State |
 | --- | --- |
-| Calamares job sequence (`settings.conf`) | Written; modules checked against the Calamares 3.4.2 build. **Never run** |
-| `unpackfs` from the live squashfs | Written; path derived from mkarchiso. **Never run** |
-| `niflheim-install-cleanup` | Simulated against a mock target root (success, missing kernel, empty template). **Never run in a real install** |
+| `niflheim-installer.conf` | Written 2026-11-07 |
+| `yggdrasil-install-system` | Tested as Labyrinth's program in QEMU/OVMF VMs (2026-10-23 and 2026-10-25; Yggdrasil's `docs/INSTALLER.md`). **Never run on Niflheim** |
+| `yggdrasil-installer` in `[labyrinth]` | The build published on 2026-11-06 (`0.1.0.r420`) has only the window, not `yggdrasil-install-system`. An ISO needs a build made after Yggdrasil 0c54aa0 |
+| `niflheim-install-cleanup` | Updated 2026-11-07 (greetd, the Labyrinth key, Heimdall). An earlier version was simulated against a mock target root. **Never run in a real install** |
 | zstd squashfs | Set in `profiledef.sh`. **ISO size and install time not measured** |
-| Calamares branding, partition and user defaults | Upstream defaults; see "Not done" |
 
-Before this change the shipped installer could not have installed anything:
-`INSTALL_CONFIG=ON` installs Calamares' own sample config, whose `unpackfs`
-source is a developer file (`../CHANGES`), and whose sequence lists the
-`initramfs` module that `packages/pkgbuilds/calamares/PKGBUILD` deliberately
-does not build. Install speed was never the first problem; there was no working
-install path to speed up.
+## Starting it
+
+- **Launchers:** "Install Niflheim" in the start menu (`profile/airootfs/usr/share/applications/niflheim-install.desktop`,
+  in the System folder) and the same launcher in the live user's Desktop folder (`home/live/Desktop/install-niflheim.desktop`).
+  Both run `yggdrasil-installer`.
+- **UEFI only.** The install program stops on a computer started without UEFI ("installs on UEFI computers only"). The
+  medium itself also starts on BIOS computers (`bootmodes` in `profiledef.sh` has `bios.syslinux` as well as
+  `uefi.systemd-boot`), so the live session works there, but the graphical installer does not.
+- **`archinstall`** (from releng's package list) stays as a command-line, scripted alternative. It installs from the
+  network, not from the medium.
 
 ## Design: copy the live image, do not rebuild it
 
 ```
 mkarchiso  ──►  airootfs.sfs  (zstd squashfs, inside the ISO)
                     │
-   live boot  ──►  mounted at /run/archiso/bootmnt/niflheim/x86_64/airootfs.sfs
+   live boot  ──►  /run/archiso/bootmnt/niflheim/x86_64/airootfs.sfs
                     │
-   Calamares  ──►  partition, mount
-                   unpackfs                (rsync the squashfs onto the disk)
-                   shellprocess@cleanup    (niflheim-install-cleanup, chrooted)
-                   machineid, locale, keyboard, fstab
-                   initcpiocfg, initcpio   (regenerate the initramfs)
-                   users, displaymanager, networkcfg, hwclock
-                   bootloader (grub), umount
+   yggdrasil-installer       language, keyboard, time zone, disk, account, summary
+     │  pkexec yggdrasil-install-system   (the choices as JSON on standard input)
+     ▼
+   checks          UEFI, the disk not in use, at least 30 GB
+   disk            GPT: a 1 GiB EFI partition and the rest (or partitions chosen by hand)
+                   optional LUKS2; btrfs with @, @home, @cache, @log
+   copy            unsquashfs the medium's image onto the disk
+   inside          niflheim-install-cleanup, then language, keyboard, time zone, the
+                   computer's name, the account (wheel, sudo; root locked), greetd
+   boot            start-up image (mkinitcpio), GRUB (and the firmware's fallback path)
 ```
 
-The installed system is a copy of what the user just ran, not a fresh
-`pacstrap`. That is why the install is fast and why it works with no network:
-nothing is resolved, downloaded or built on the target. It also matches the
-project's rule that the live session must be useful air-gapped; the installer
-inherits the same property. The cost is that the installed system starts as a
-snapshot of the ISO's package versions, so the first thing a connected user
-should do is `pacman -Syu`.
+The installed system is a copy of what the user just ran, not a fresh `pacstrap`. That is why the install is fast and
+why it works with no network: nothing is resolved, downloaded or built on the target. It also matches the project's rule
+that the live session must be useful air-gapped; the installer inherits the same property. The cost is that the
+installed system starts as a snapshot of the ISO's package versions, so the first thing a connected user should do is
+`pacman -Syu`.
+
+The program finds the image at `/run/archiso/bootmnt/<ID>/x86_64/airootfs.sfs`, where `ID` is `niflheim` from
+`/etc/os-release`. That has to equal `install_dir` in `profiledef.sh`: change one and you must change the other (or set
+`medium` in `niflheim-installer.conf`).
+
+### What `niflheim-installer.conf` sets
+
+`profile/airootfs/usr/share/yggdrasil/integrations/niflheim-installer.conf`:
+
+| Key | Value |
+| --- | --- |
+| `command` | `/usr/bin/yggdrasil-install-system` |
+| `name` | `Niflheim` (messages, the boot menu, the EFI entry, the disk labels) |
+| `cleanup` | `/usr/local/bin/niflheim-install-cleanup` |
+| `reserved_logins` | `heimdall sarina` (beyond every account the medium already has, root, live and greeter) |
+
+Everything else is the program's default (Yggdrasil's `docs/INSTALLER.md` lists the keys): kernel options `quiet`; the
+account's groups users, lp, video, network, storage, wheel, audio and kvm; a disk of at least 30 GB; no `finish` program;
+the plain GRUB menu (no `boot_menu_theme`); and no Browsers or optional-software pages. The file is live-medium only:
+the clean-up deletes it, with the launcher.
 
 ### Why speed comes from where it does
 
 Install time is dominated by two things, and both are addressed:
 
-1. **Unpacking the image.** Calamares mounts the squashfs and rsyncs it, so the
-   bound is decompression plus disk writes. `profile/profiledef.sh` now builds
-   the image with zstd instead of releng's xz. zstd decompresses several times
-   faster; the price is a larger ISO.
-2. **Rebuilding the initramfs.** The live image carries archiso's initramfs
-   config, which compresses with `xz -9e`. `niflheim-install-cleanup` removes it,
-   so the installed system uses Arch's stock config: zstd, and a single
-   `default` image with no fallback.
+1. **Unpacking the image.** The program runs `unsquashfs`, so the bound is decompression plus disk writes.
+   `profile/profiledef.sh` builds the image with zstd instead of releng's xz. zstd decompresses several times faster;
+   the price is a larger ISO.
+2. **Rebuilding the initramfs.** The live image carries archiso's initramfs config, which compresses with `xz -9e`.
+   `niflheim-install-cleanup` removes it, so the installed system uses Arch's stock config: zstd, and a single `default`
+   image with no fallback.
 
-**Neither effect has been measured.** The direction is well understood, the
-magnitude is not, and the ISO size increase is a real trade-off. Measure both
-from a CI build before relying on this, and revert `airootfs_image_tool_options`
-to releng's xz line if the size is not acceptable. The original line is kept in
-a comment in `profiledef.sh`.
+**Neither effect has been measured.** The direction is well understood, the magnitude is not, and the ISO size increase
+is a real trade-off. Measure both from a built ISO before relying on this, and revert `airootfs_image_tool_options` to
+releng's xz line if the size is not acceptable. The original line is kept in a comment in `profiledef.sh`.
 
 ### What `niflheim-install-cleanup` does, and why each step exists
 
-`profile/airootfs/usr/local/bin/niflheim-install-cleanup` runs inside the target
-straight after `unpackfs` and before anything that reads what it removes. Every
-step answers something specific about the live image not being an installable
-root:
+`profile/airootfs/usr/local/bin/niflheim-install-cleanup` runs inside the new system right after the copy, before the
+program sets up the account and builds the start-up image. Every step answers something specific about the live image
+not being an installable root:
 
 | Step | Why |
 | --- | --- |
+| Copy `/home/live/.config` into `/etc/skel`, if there is one (owned by root, readable by all) | Desktop config for new accounts. Since 2026-11-07 the image has no `.config` for the live user (Yggdrasil writes its own at the first sign-in), so this does nothing today |
+| Delete the live sudoers file, the polkit rule, greetd's `live.toml` and its `greetd.service.d/live.conf` drop-in | They exist so a passwordless account can do anything and is signed in by itself; on an installed system they would grant that to every `wheel` user and sign in a user that no longer exists. The install program writes the installed system's own sudoers file |
+| Delete `sysusers.d/live.conf`, `tmpfiles.d/live-home.conf` and `/home/live` | They recreate the live user on every boot |
+| Delete the installer launcher and `niflheim-installer.conf` | An installed system has no live image to copy, so the installer has nothing to offer there |
+| Delete `/etc/mkinitcpio.conf.d/archiso.conf` | Its `HOOKS` would override the stock config, and its `xz -9e` slows the initramfs build |
+| Regenerate `/etc/mkinitcpio.d/linux.preset` from `/usr/share/mkinitcpio/hook.preset` | The live preset is archiso's and builds an initramfs that looks for the live squashfs. Arch generates the preset from this template, so we use the same template rather than a hand-written copy |
 | Restore `/boot/vmlinuz-linux` | mkarchiso runs `find /boot -mindepth 1 -delete` on the image, so the target has no kernel. The package's copy under `/usr/lib/modules/*/vmlinuz` survives, and the script installs it the way Arch's own pacman hook does |
-| Regenerate `/etc/mkinitcpio.d/linux.preset` from `/usr/share/mkinitcpio/hook.preset` | The live preset is archiso's and builds an initramfs that looks for the live squashfs. Arch no longer ships a `linux.preset` in the kernel package; it generates one from this template, so we use the same template rather than a hand-written copy |
-| Delete `/etc/mkinitcpio.conf.d/archiso.conf` | Its `HOOKS` would override whatever `initcpiocfg` writes, and its `xz -9e` slows the initramfs build |
-| Delete the live `sudoers`, polkit and SDDM autologin files | They exist so a passwordless account can do anything; on an installed system they would grant that to every `wheel` user and autologin a user that no longer exists |
-| Delete `kscreenlockerrc`, `sysusers.d/live.conf`, `tmpfiles.d/live-home.conf`, `/home/live` | Plasma's locker was disabled only because the live account has no password; the other two recreate the live user on every boot |
-| Copy `/home/live/.config` into `/etc/skel` | The desktop config (both Hyprland looks and the Plasma fallback) lives in the live user's home. Without this the installed user gets a bare desktop |
-| Initialise the pacman keyring if the image has none | The installed system needs it for `pacman -Syu` and for Sarina to install anything. releng ships a `pacman-init.service` for the live medium; this profile does not, so whether the squashfs carries a keyring is unverified and the script covers both cases |
+| Initialise the pacman keyring if there is none, then put in the archlinux, blackarch and labyrinth keys | `pacman -Syu` needs the Labyrinth key (the desktop comes from the signed `[labyrinth]`), and Sarina needs a keyring to install anything later. mkarchiso builds the image without a keyring (`pacstrap -G`), and the live one made at start-up is not in the image, so the script normally creates it |
+| Run `heimdall-enable-defaults` and enable `clamav-freshclam.service` | Heimdall and ClamAV's signature updates on for the installed system. The firewall (`ufw`) is left off; see [DESKTOP.md](DESKTOP.md) |
 
-It fails loudly (non-zero exit) if the kernel is missing or the preset template
-is empty or malformed. Both would otherwise produce an install that completes
-and then does not boot.
+It fails loudly (non-zero exit) if the kernel is missing or the preset template is empty or malformed. Both would
+otherwise produce an install that completes and then does not boot.
 
-When you add a live-only file to `profile/airootfs/etc/`, add it to the
-`live_only` list in that script too. Nothing checks the two lists against each
-other.
+When you add a live-only file to `profile/airootfs/`, add it to the `live_only` list in that script too. Nothing checks
+the two lists against each other.
 
 ### Offline
 
-The welcome page's requirement list is Calamares' default: only RAM is
-*required*, and the internet check is advisory. An offline install therefore
-works. The unpack, the cleanup and the initramfs rebuild need no network.
-
-## What we took from Omarchy
-
-Read from the `quattro` branch of the Omarchy repo (MIT) and from
-`omacom/try-omarchy-windows`, through GitHub's web pages. These are second-hand
-summaries, so treat the counts as approximate.
-
-- Omarchy's `install/` directory holds package lists and post-install and
-  provisioning scripts: `omarchy-base.packages` (~152 packages),
-  `omarchy-other.packages` (~63, hardware-specific: NVIDIA, Broadcom, T2 Macs,
-  Framework, Dell) and directories `config`, `hardware`, `helpers`, `login`,
-  `post-install`, `provisioning`, `user`. **The partitioning and base-system
-  install is not in that repo.** We did not find the code behind the roughly
-  one-minute install that prompted this work, so we do not know how they get
-  that figure. Plausible causes are a small package set, a prebuilt package
-  repo and an image-based install, but that is a hypothesis.
-- `try-omarchy-windows` runs Omarchy in QEMU on the Windows Hypervisor Platform
-  from a ~2 GB prebuilt Arch guest image. It is a way to *try* Omarchy, not an
-  installer, but it does show an image-first model.
-
-Ideas worth borrowing, none adopted yet:
-
-- **Hardware-conditional package lists.** A base list plus lists installed only
-  when matching hardware is detected, instead of shipping every GPU and Wi-Fi
-  driver in the image.
-- **First-boot provisioning.** Creating the user and doing slow setup after the
-  first boot rather than inside the installer.
-- **Migrations.** Versioned scripts that carry installed systems forward across
-  releases. Niflheim has nothing equivalent.
-
-Why Niflheim does not use Omarchy's installer: it is built around Omarchy's own
-bootloader, snapshot and package layout, and an ISO that does not ship a
-base system for it to install onto. Niflheim keeps its own live ISO and
-Calamares. The longer reasoning is in [DESKTOP.md](DESKTOP.md).
+The installer has no network check, and Niflheim's integration file names no Browsers or optional-software lists, so
+nothing is fetched during the install. The copy, the clean-up and the initramfs rebuild need no network.
 
 ## Not done
 
-- **Never run.** The first real test is to boot the built ISO in a VM, run
-  Calamares, reboot and log in. Things most likely to need a fix: the unpack
-  path, the keyring step, GRUB on BIOS versus UEFI, and whether Calamares logs
-  show the cleanup script running chrooted as expected.
-- **Branding.** `branding: default` is Calamares' sample, including its squid
-  logo. A `niflheim` branding directory (`branding.desc`, logo, slideshow,
-  stylesheet) is still to do.
-- **Partition and user defaults.** Upstream's: ext4, GRUB, a default hostname of
-  `derp-${cpu}`. Overriding `users.conf` means copying the whole upstream file,
-  because Calamares does not merge partial module configs.
-- **Required disk space.** Upstream's `requiredStorage` is 5.5 GB, which is
-  below what this image needs. The real installed size has not been measured.
-- **Agent-assisted install.** Install-time tool selection is Sarina's job and
-  does not exist yet; see [ARCHITECTURE.md](ARCHITECTURE.md).
-- **Hyprland as the installed default.** The installed system keeps whichever
-  SDDM session the user picks; the live medium autologins Plasma. See
-  [DESKTOP.md](DESKTOP.md) for the phasing.
+- **Never run on Niflheim.** The first real test (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)) is to boot the built
+  ISO in a UEFI VM, install, reboot and sign in. Things most likely to need a fix: the image path, the keyring step and
+  the clean-up's list of live files.
+- **The `yggdrasil-installer` package.** The ISO needs one from `[labyrinth]` that includes `yggdrasil-install-system`
+  (see Status).
+- **BIOS computers.** Only `archinstall` installs there.
+- **Branding.** The name is Niflheim's; the boot menu is GRUB's plain one, and there is no logo yet.
+- **Required disk space.** The program's default, 30 GB. The real installed size has not been measured.
+- **Encryption and keyboard layouts.** GRUB reads the encryption password with a US layout (a known limit of the
+  program; Yggdrasil's `docs/INSTALLER.md`).
+- **Agent-assisted install.** Install-time tool selection is Sarina's job and does not exist yet; see
+  [ARCHITECTURE.md](ARCHITECTURE.md).
