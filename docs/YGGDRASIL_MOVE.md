@@ -38,7 +38,7 @@ Steps 1-5 were done on 2026-11-07; step 6 is open.
 4. [x] **Build.** Done 2026-11-07 (3193bca). `scripts/build.sh` adds the Labyrinth key by its full fingerprint before
    `mkarchiso` and makes the systemd service links in the work copy (they had been committed as text files). The local
    `[niflheim]` repo keeps only what is Niflheim's own (sarina-git while it is vendored).
-5. [x] **Docs.** Done 2026-11-07. `README.md`, `CLAUDE.md`, `docs/DESKTOP.md`, `docs/INSTALLER.md`, `docs/ARCHITECTURE.md`
+5. [x] **Docs.** Done 2026-11-07 (8ba9cb7). `README.md`, `CLAUDE.md`, `docs/DESKTOP.md`, `docs/INSTALLER.md`, `docs/ARCHITECTURE.md`
    and `THIRD_PARTY_NOTICES.md` describe Yggdrasil, greetd and Yggdrasil's installer instead of KDE, Waybar, the Omarchy
    modes and Calamares.
 6. [ ] **Check.** Build the ISO, boot it in a VM, install, reboot, sign in, open Settings, Agora and a terminal;
