@@ -92,7 +92,7 @@ Niflheim_OS/
 │   ├── packages.x86_64       # package list installed into the ISO/target system
 │   ├── pacman.conf           # repos for the build: core/extra/multilib + [blackarch] + [labyrinth]
 │   └── airootfs/             # files overlaid onto the live system's root (greetd, Yggdrasil integration files, the
-│                             #   installed system's pacman.conf, niflheim-install-cleanup)
+│                             #   installed system's pacman.conf, niflheim-install-cleanup, Agora's Niflheim catalog)
 ├── docs/                     # ARCHITECTURE.md, DESKTOP.md (Yggdrasil), INSTALLER.md, YGGDRASIL_MOVE.md
 ├── scripts/build.sh          # the ISO build
 ├── CLAUDE.md                 # Guidance for AI agents working in this repo

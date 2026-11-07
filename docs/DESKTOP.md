@@ -99,6 +99,20 @@ are in `profile/airootfs/usr/share/yggdrasil/integrations/`:
 | `niflheim-branding.conf` | `branding` | The accent colour `#437569`, the wallpaper and the splash logo (see "The look" below). The name and logo come from `/etc/os-release` |
 | `niflheim-installer.conf` | `installer` | Points the installer window at `yggdrasil-install-system` and names Niflheim's clean-up. Live medium only. See [INSTALLER.md](INSTALLER.md) |
 | `niflheim-security.conf` | `security` | Heimdall in the panel and Settings: its alerts, the "contained" state of Sarina and its release, the files Heimdall holds, and Settings > Wi-Fi & Network > Devices and Wi-Fi checks |
+| `niflheim-packages.conf` | `packages` | Agora's own catalog for Niflheim (`/usr/share/niflheim/agora/catalog.json`, edition `niflheim`): what only Niflheim offers, from `[labyrinth]`. See "Agora on Niflheim" below |
+
+## Agora on Niflheim
+
+Agora, the app store, lists what the operating system's `packages` integration names, plus repositories the user adds.
+Labyrinth's catalog lives in Labyrinth's image (`/usr/share/labyrinth`), so on Niflheim Agora had no catalog of its own until
+2026-11-07. Niflheim's is `profile/airootfs/usr/share/niflheim/agora/catalog.json`; every entry is marked for the edition
+`niflheim`, so a copy of the file anywhere else lists nothing.
+
+- **Argus** (decided 2026-11-07): the Argus app and the Argus firmware for the Flipper Zero as one entry and one package,
+  `argus-git`. The package holds the app (`qFlipper`, also `argus`; shown as Argus) and the firmware built as an update
+  bundle, `/usr/share/argus/firmware/argus-firmware.tgz` (in Argus: Install from file), with a `.dfu` for a Flipper in
+  recovery mode. Its recipe is in Labyrinth_OS (`packages/pkgbuilds/argus-git`), like everything else Niflheim installs from
+  `[labyrinth]`; it is not on Labyrinth's ISO and Labyrinth's Agora does not list it.
 
 ## The look
 
