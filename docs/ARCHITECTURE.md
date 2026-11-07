@@ -34,8 +34,9 @@
    was Calamares.
 5. **Security monitor**: [Heimdall](https://github.com/Artifex-Technologies/Heimdall)
    (`heimdall-git` from `[labyrinth]`), shared with Labyrinth OS, with ClamAV;
-   on in the live session and the installed system. `ufw` is installed but left
-   off. See [DESKTOP.md](DESKTOP.md).
+   installed but off until it has rules for each BlackArch tool
+   (`/etc/heimdall/defaults-off`, 2026-11-07). `ufw` is installed but off. See
+   [DESKTOP.md](DESKTOP.md).
 6. **AI agent**: [Sarina](https://github.com/Artifex-Technologies/Sarina),
    installed as `sarina-git` from `[labyrinth]`, the same package Labyrinth OS
    installs. Nothing is built in this repo: until 2026-11-07 `sarina-git` was
@@ -242,8 +243,9 @@ command, a systemd timer, a Yggdrasil integration file, etc. — TBD).
   that capability does not exist yet. Until it does, Niflheim ships less
   tooling than it did as a concept. That is an accepted, temporary cost.
 - The installer has never been run on Niflheim (see [INSTALLER.md](INSTALLER.md)).
-- Niflheim's own look: only the accent colour exists (`niflheim-branding.conf`).
-  No logo (`/etc/os-release` has no `LOGO`), no Niflheim wallpaper, no boot menu
-  theme.
+- Niflheim's own look: accent, wallpaper, logo and splash exist since
+  2026-11-07 (DESKTOP.md, "The look"); no boot menu theme or boot animation yet.
+- Heimdall's rules for each BlackArch tool (it stays off until they exist), and a
+  firewall profile for hostile networks such as a hacker convention.
 - Concrete shape of Sarina's on-system maintenance role (see above) — CLI
   tool, systemd timer, a Yggdrasil integration, or some combination.

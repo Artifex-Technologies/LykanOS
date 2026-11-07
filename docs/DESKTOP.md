@@ -96,23 +96,38 @@ are in `profile/airootfs/usr/share/yggdrasil/integrations/`:
 
 | File | Kind | What it does |
 | --- | --- | --- |
-| `niflheim-branding.conf` | `branding` | The accent colour, `#1793d1` (the blue of `ANSI_COLOR` in `/etc/os-release`). The name comes from `/etc/os-release`. No wallpaper or logo yet |
+| `niflheim-branding.conf` | `branding` | The accent colour `#437569`, the wallpaper and the splash logo (see "The look" below). The name and logo come from `/etc/os-release` |
 | `niflheim-installer.conf` | `installer` | Points the installer window at `yggdrasil-install-system` and names Niflheim's clean-up. Live medium only. See [INSTALLER.md](INSTALLER.md) |
 | `niflheim-security.conf` | `security` | Heimdall in the panel and Settings: its alerts, the "contained" state of Sarina and its release, the files Heimdall holds, and Settings > Wi-Fi & Network > Devices and Wi-Fi checks |
 
+## The look
+
+Deep teal green, decided 2026-11-07 from a reference picture: `#101c1c` at the edges, `#24413c` in the middle, `#437569`
+the glow and the accent (white text reads on it; `ANSI_COLOR` in `/etc/os-release` too). The logo is a snake wound round a
+labyrinth "A", drawn to echo the Arch logo; a draft, made on 2026-11-07, to replace freely.
+
+- `assets/logo/niflheim-source.png` is the drawing (white lines on black). `scripts/gen-logo.py` (Pillow, potrace) makes
+  the set from it: white, mint, green, grey and black, as transparent PNGs and SVGs (`assets/logo/`, shipped in
+  `/usr/share/niflheim/logo/`), the splash logo `niflheim-splash.png`, and the icon `niflheimos` (mint, in
+  `/usr/share/icons/hicolor/*/apps/`; `LOGO=niflheimos` in os-release). Run it again after changing the drawing.
+- `scripts/gen-wallpaper.py` (Pillow) makes `/usr/share/wallpapers/niflheim/niflheim-green.png` (2560x1440): the desktop's
+  default wallpaper (`niflheim-branding.conf`) and the login screen's (`/etc/yggdrasil/greeter.conf`).
+- Not yet: a boot menu theme and a boot animation (GRUB's plain menu; no Plymouth).
+
 ## Heimdall and the firewall
 
-Heimdall (`heimdall-git`, from `[labyrinth]`) watches the system and Sarina; `ufw` and `clamav` come from Arch.
+Heimdall (`heimdall-git`, from `[labyrinth]`) is installed but **off**, decided 2026-11-07: before it watches a system full
+of security tools it needs a rule for each BlackArch tool, so it neither stops them working nor gets turned against the
+system through them. `ufw` and `clamav` come from Arch.
 
-- **Live session and installed system:** the `heimdall-git` package switches Heimdall on when it is installed: its
-  pacman hook (`heimdall-install.hook`) runs `heimdall-enable-defaults`, and pacstrap runs that hook while the image is
-  built. That enables Heimdall's service, its daily updates of threat lists, the security tracker and the DNS block list,
-  the LAN scan and Wi-Fi notifications. So Heimdall runs in the live session too, and the installed system, a copy of the
-  image, has the same.
-- **During the install** `niflheim-install-cleanup` runs `heimdall-enable-defaults` again, as a safety net, and enables
-  ClamAV's signature updates (`clamav-freshclam.service`).
-- **Firewall:** `ufw` is installed but left off on purpose: listeners for the security tools need incoming connections.
-  `sudo ufw enable` turns it on. (Labyrinth OS has it on, with incoming connections blocked.)
+- **How it stays off:** the image has `/etc/heimdall/defaults-off`, so Heimdall's install hook (`heimdall-install.hook`
+  -> `heimdall-enable-defaults`, which pacstrap runs while the image is built) switches nothing on. Live session and
+  installed system alike. To switch it on: `sudo heimdall-enable-defaults --force && sudo systemctl start heimdall`.
+- **During the install** `niflheim-install-cleanup` enables ClamAV's signature updates (`clamav-freshclam.service`).
+- **Firewall:** `ufw` is installed but off for now: listeners for the security tools need incoming connections.
+  `sudo ufw enable` turns it on. The plan: on, with rules for the tools, for places like a hacker convention (DEF CON),
+  where the network around the computer is hostile. (Labyrinth OS has it on, with incoming connections blocked.)
+- **Sarina** is part of Niflheim too: once she is ready, she gets access to all the tools (with the rules above).
 
 ## Known limit: locking the live session
 
@@ -125,7 +140,7 @@ manual lock (Super + L) would strand the live user: there is no password to unlo
 All of this waits for the first ISO (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)):
 
 - The live medium starts to the Yggdrasil session; signing out shows the login screen.
-- Heimdall runs in the live session (above).
+- Heimdall stays off in the live session and after installing (above).
 - Settings, Agora and Ghostty open; `pacman -Syu` reads both Arch and `[labyrinth]`.
 
 ## Sarina in the desktop

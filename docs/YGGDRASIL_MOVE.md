@@ -52,3 +52,10 @@ Steps 1-5 were done on 2026-11-07; step 6 is open.
 
 Step 6 needs an ISO build and a VM: it waits until the documentation catch-up (Labyrinth `docs/CATCH_UP_2026-11-07.md`) is
 done, the same hold as Labyrinth's next ISO.
+
+## After the move (2026-11-07)
+
+- Heimdall is installed but off (`/etc/heimdall/defaults-off`; Heimdall 0fd7c17 taught its install hook to respect it) until
+  it has rules for each BlackArch tool. The firewall stays off for now; on later for hostile networks (a hacker convention).
+- Niflheim's look: deep teal (`#437569` accent), the snake-and-labyrinth logo (draft) and a wallpaper; docs/DESKTOP.md,
+  "The look".

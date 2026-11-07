@@ -107,7 +107,7 @@ not being an installable root:
 | Regenerate `/etc/mkinitcpio.d/linux.preset` from `/usr/share/mkinitcpio/hook.preset` | The live preset is archiso's and builds an initramfs that looks for the live squashfs. Arch generates the preset from this template, so we use the same template rather than a hand-written copy |
 | Restore `/boot/vmlinuz-linux` | mkarchiso runs `find /boot -mindepth 1 -delete` on the image, so the target has no kernel. The package's copy under `/usr/lib/modules/*/vmlinuz` survives, and the script installs it the way Arch's own pacman hook does |
 | Initialise the pacman keyring if there is none, then put in the archlinux, blackarch and labyrinth keys | `pacman -Syu` needs the Labyrinth key (the desktop comes from the signed `[labyrinth]`), and Sarina needs a keyring to install anything later. mkarchiso builds the image without a keyring (`pacstrap -G`), and the live one made at start-up is not in the image, so the script normally creates it |
-| Run `heimdall-enable-defaults` and enable `clamav-freshclam.service` | Heimdall is already on in the image (its package's pacman hook runs the same program); running it again is a safety net. ClamAV's signature updates are switched on only for the installed system. The firewall (`ufw`) is left off; see [DESKTOP.md](DESKTOP.md) |
+| Enable `clamav-freshclam.service` | ClamAV's signature updates, for the installed system only. Heimdall stays off (`/etc/heimdall/defaults-off`, kept on the installed system) and so does the firewall (`ufw`); see [DESKTOP.md](DESKTOP.md) |
 
 It fails loudly (non-zero exit) if the kernel is missing or the preset template is empty or malformed. Both would
 otherwise produce an install that completes and then does not boot.
@@ -128,7 +128,7 @@ nothing is fetched during the install. The copy, the clean-up and the initramfs 
 - **The `yggdrasil-installer` package.** The ISO needs one from `[labyrinth]` that includes `yggdrasil-install-system`
   (see Status): an ISO built before Labyrinth's publish on 2026-11-08 has an installer window with no program to run.
 - **BIOS computers.** Only `archinstall` installs there.
-- **Branding.** The name is Niflheim's; the boot menu is GRUB's plain one, and there is no logo yet.
+- **Branding.** The name and logo are Niflheim's; the boot menu is GRUB's plain one (no theme yet).
 - **Required disk space.** The program's default, 30 GB. The real installed size has not been measured.
 - **Encryption and keyboard layouts.** GRUB reads the encryption password with a US layout (a known limit of the
   program; Yggdrasil's `docs/INSTALLER.md`).

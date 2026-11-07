@@ -1,0 +1,3 @@
+# Heimdall is installed on Niflheim OS but left off (decided 2026-11-07): it needs rules for each BlackArch tool first, so it
+# neither stops them working nor gets turned against the system through them. While this file is here Heimdall's install hook
+# switches nothing on. To switch it on: sudo heimdall-enable-defaults --force && sudo systemctl start heimdall

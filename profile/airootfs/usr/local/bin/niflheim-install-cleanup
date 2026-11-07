@@ -87,14 +87,10 @@ if [[ ! -s /etc/pacman.d/gnupg/pubring.gpg ]]; then
 fi
 pacman-key --populate archlinux blackarch labyrinth
 
-# 6. Heimdall: its service, daily updates (threat lists, security tracker, DNS block list) and Wi-Fi notifications.
-#    Heimdall's package switches these on when it is installed (its pacman hook runs heimdall-enable-defaults), so they
-#    are on in the live session too; running it again here is a safety net. And ClamAV's signature updates. The firewall
-#    (ufw) is installed but left off: listeners for the security tools need incoming connections; `sudo ufw enable` turns
-#    it on (Labyrinth OS has it on, incoming blocked).
-if command -v heimdall-enable-defaults >/dev/null 2>&1; then
-  heimdall-enable-defaults && say "switched on Heimdall's defaults" || say "warning: could not switch on Heimdall's defaults"
-fi
+# 6. Heimdall is installed but off (/etc/heimdall/defaults-off: its install hook switched nothing on; decided 2026-11-07,
+#    until it has rules for each BlackArch tool). ClamAV's signature updates are on. The firewall (ufw) is installed but off
+#    too: listeners for the security tools need incoming connections; `sudo ufw enable` turns it on (for a hacker convention,
+#    say; Labyrinth OS has it on, incoming blocked).
 if [[ -e /usr/lib/systemd/system/clamav-freshclam.service ]]; then
   systemctl enable clamav-freshclam.service >/dev/null 2>&1 && say "enabled ClamAV signature updates" || say "warning: could not enable ClamAV signature updates"
 fi

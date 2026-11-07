@@ -13,8 +13,8 @@ penetration testing, combining:
   installer. It is the desktop of [Labyrinth OS](https://github.com/Artifex-Technologies/Labyrinth_OS),
   and Niflheim installs the same packages. See [The desktop](#the-desktop)
 - **[Heimdall](https://github.com/Artifex-Technologies/Heimdall)**, the security
-  monitor Labyrinth OS uses too, running in the live session and on the
-  installed system
+  monitor Labyrinth OS uses too: installed, but off until it has rules for
+  each BlackArch tool
 - **[Sarina](https://github.com/Artifex-Technologies/Sarina)**, an AI agent integrated
   directly into the OS — for choosing and organising tooling, and for making
   sense of scan and capture output in place
@@ -70,8 +70,8 @@ from the profile.
   Labyrinth OS's signed package repository (`[labyrinth]`, the GitHub release `packages` of Labyrinth_OS), built for any 64-bit x86 CPU.
   It is listed last, with `SigLevel = Required`, both for building the ISO and on the installed system, so `pacman -Syu`
   brings desktop updates the same day Labyrinth gets them.
-- **What Niflheim adds:** three integration files Yggdrasil reads: the accent colour, the installer's settings and
-  Heimdall.
+- **What Niflheim adds:** three integration files Yggdrasil reads (its look, the installer's settings, Heimdall), and its
+  deep-teal look: the snake-and-labyrinth logo and a wallpaper (`scripts/gen-logo.py`, `scripts/gen-wallpaper.py`).
 
 Details, and what is not checked yet, are in [docs/DESKTOP.md](docs/DESKTOP.md).
 
@@ -146,8 +146,8 @@ problems started on 2026-11-07. Booting the ISO in a VM, installing and checking
 The installer has never been run on Niflheim. The same install program has installed Labyrinth OS in VMs. Install speed
 and the larger ISO that zstd compression produces have not been measured.
 
-Not yet done: the agent-assisted install flow, tool categorisation, Niflheim's own look beyond the accent colour (logo,
-wallpaper, boot menu), and testing on real GPU hardware. Expect rapid changes.
+Not yet done: the agent-assisted install flow, tool categorisation, Heimdall's rules for the tools (it is installed but
+off until then), a boot menu theme, and testing on real GPU hardware. Expect rapid changes.
 
 ## Sarina
 
