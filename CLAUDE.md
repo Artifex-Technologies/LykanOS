@@ -272,6 +272,7 @@ the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
    is Sarina c90f1ae). Yggdrasil's start menu has a Security folder and opens
    `Terminal=true` entries in a terminal with a shell left open (Yggdrasil
    7236d54). Remapping existing `X-BlackArch-*` entries and icons are not done.
+
 3. **Data analysis** — the reason the agent is in the OS at all: making sense
    of scan and capture output in place.
 4. **`blackarch_compat` against a real Docker daemon** — currently
