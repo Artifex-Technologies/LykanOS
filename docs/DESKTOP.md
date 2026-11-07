@@ -149,7 +149,8 @@ All of this waits for the first ISO (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOV
 so Yggdrasil shows Sarina in the panel and Settings with the talk key Super + S. The programs that file names
 (`/usr/local/bin/labyrinth-sarina-ask`, `-speak`, `-warm`, `-setting`) are part of Labyrinth OS's image, not of the
 package, and Niflheim does not ship them. So on Niflheim the talk key has no program behind it, and Settings' Assistant
-page hides the controls whose programs are missing (Yggdrasil hides a control whose command is missing). Not fixed yet.
+page hides the controls whose programs are missing (Yggdrasil hides a control whose command is missing). Not fixed yet:
+the plan (2026-11-07) moves those programs into a Sarina package, `Sarina/docs/VOICE_PACKAGE_PLAN.md`, tested with me first.
 
 ## Sarina contracts
 
