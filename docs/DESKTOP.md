@@ -146,6 +146,12 @@ system through them. `ufw` and `clamav` come from Arch.
 - **How it stays off:** the image has `/etc/heimdall/defaults-off`, so Heimdall's install hook (`heimdall-install.hook`
   -> `heimdall-enable-defaults`, which pacstrap runs while the image is built) switches nothing on. Live session and
   installed system alike. To switch it on: `sudo heimdall-enable-defaults --force && sudo systemctl start heimdall`.
+- **The rules (2026-11-07):** Heimdall's tool rules (Heimdall `docs/TOOL_RULES.md`, `917d6b0`), in force because the image has
+  `/etc/heimdall/security-tools`. For the 29 tools in its catalog (the core list here and a few more), a tool's program file is
+  checked against its package: a verified tool's normal work is written as info and a scanner's destinations are summarised;
+  a changed tool file is a critical alert; what Sarina starts and an offline tool (hashcat, john) connecting are shown. Not
+  covered yet: Wi-Fi monitor mode, payload files, C2 servers. Heimdall stays off until these are tested with the tools in a
+  Niflheim VM.
 - **During the install** `niflheim-install-cleanup` enables ClamAV's signature updates (`clamav-freshclam.service`).
 - **Firewall:** `ufw` is installed but off for now: listeners for the security tools need incoming connections.
   `sudo ufw enable` turns it on. The plan: on, with rules for the tools, for places like a hacker convention (DEF CON),
