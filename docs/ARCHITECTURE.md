@@ -34,11 +34,13 @@
    was Calamares.
 5. **Security monitor**: [Heimdall](https://github.com/Artifex-Technologies/Heimdall)
    (`heimdall-git` from `[labyrinth]`), shared with Labyrinth OS, with ClamAV;
-   switched on for the installed system. `ufw` is installed but left off. See
-   [DESKTOP.md](DESKTOP.md).
-6. **AI agent**: [Sarina](https://github.com/Artifex-Technologies/Sarina), a
-   repo vendored as a git submodule at `packages/sarina`, packaged for the
-   ISO by `packages/pkgbuilds/sarina-git` into the local `[niflheim]` repo.
+   on in the live session and the installed system. `ufw` is installed but left
+   off. See [DESKTOP.md](DESKTOP.md).
+6. **AI agent**: [Sarina](https://github.com/Artifex-Technologies/Sarina),
+   installed as `sarina-git` from `[labyrinth]`, the same package Labyrinth OS
+   installs. Nothing is built in this repo: until 2026-11-07 `sarina-git` was
+   built into a local `[niflheim]` repo from `packages/sarina`, a copy of
+   Sarina removed on 2026-10-08.
 
 ## Tool delivery: a small baked-in core, then Sarina
 
@@ -98,13 +100,13 @@ is a deliberate floor rather than a placeholder — see "Open questions".
 
 ## Validating additions: `blackarch_compat`
 
-The agent submodule ships a purpose-built harness at
-`packages/sarina/blackarch_compat/`: it installs one `blackarch-*` category
+The Sarina repository ships a purpose-built harness at
+`blackarch_compat/`: it installs one `blackarch-*` category
 (or an explicit combination, with `--combo`) at a time inside a disposable
 Docker container and records whether the install goes cleanly.
 
 ```bash
-cd packages/sarina
+# in a checkout of the Sarina repository
 python3 -m blackarch_compat.run_tests --all -o report.json --markdown report.md
 ```
 
@@ -113,7 +115,7 @@ package list — that list is now small enough to verify directly:
 
 ```bash
 # on an Arch host with [blackarch] and [labyrinth] configured
-mapfile -t PKGS < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64 | grep -vx sarina-git)
+mapfile -t PKGS < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64)
 pacman -Sp --print-format '%r/%n' "${PKGS[@]}"
 ```
 
@@ -171,9 +173,9 @@ user. That is why the profile also ships `sudoers.d` and a polkit rule granting
 writes the installed system's own sudoers file, and `niflheim-install-cleanup`
 deletes the live files so none of this reaches it. That script keeps its own
 list of these files, so a new live-only file has to be added there too.
-Whether Yggdrasil's screen lock can strand the live session (the KDE setup
-turned its locker off for this reason) is not checked yet; see
-[DESKTOP.md](DESKTOP.md).
+The screen does not lock by itself (`yggdrasil-idle` only observes unless its
+config says `mode = act`, and the live account has none), but a manual lock
+(Super + L) would strand the live user; see [DESKTOP.md](DESKTOP.md).
 
 **pacman's keyring is made at start-up.** mkarchiso builds the image without a
 keyring, so `pacman-init.service` creates one on the live medium and puts in
@@ -186,35 +188,25 @@ path ends in `/` (mkarchiso only recurses for those). The uid is hardcoded to
 1000 to match the pin in `sysusers.d/live.conf`, because the account does not
 exist at build time.
 
-## Package flow for Sarina
+## Package flow
 
 ```
-packages/sarina/            (git submodule, tracks Sarina)
-        │
-        ▼  scripts/build-local-packages.sh
-packages/pkgbuilds/sarina-git/PKGBUILD
-        │  (makepkg, run as a regular user)
+Yggdrasil, Heimdall and Sarina repos
+        │  Labyrinth's recipes (Labyrinth_OS packages/pkgbuilds), built and signed by its publish
         ▼
-repo/x86_64/*.pkg.tar.zst + niflheim.db   (local pacman repo, gitignored)
+[labyrinth]   (GitHub release "packages" of Labyrinth_OS; Labyrinth's docs/PACKAGE_REPO.md)
         │
-        ▼  scripts/build.sh → mkarchiso, using profile/pacman.conf's [niflheim] repo
+        ▼  scripts/build.sh → mkarchiso, with Arch and [blackarch] (profile/pacman.conf)
 out/*.iso
 ```
 
-Advancing Sarina to a new commit is:
-
-```bash
-./scripts/update-sarina.sh   # git submodule update --remote --merge, staged
-git commit -m "Update Sarina"
-```
-
-The distro repo's `packages/pkgbuilds/sarina-git/PKGBUILD` builds directly
-from whatever commit `packages/sarina` is checked out to — no tagged
-release needed for local/dev/CI builds. The AUR-facing PKGBUILD that builds
-from tagged release tarballs lives upstream, in the Sarina repo itself, at
-`packaging/arch/PKGBUILD` (`pkgname=sarina` there), and is the source of
-truth for the systemd unit, sysusers snippet, and env file both PKGBUILDs
-install.
+Nothing is built in this repository. A new Sarina, desktop or Heimdall reaches
+the next ISO, and installed systems through `pacman -Syu`, once Labyrinth's
+publish has put it in `[labyrinth]`. The `sarina-git` recipe is Labyrinth's
+`packages/pkgbuilds/sarina-git`; the AUR-facing PKGBUILD that builds from
+tagged release tarballs lives in the Sarina repo itself, at
+`packaging/arch/PKGBUILD` (`pkgname=sarina` there), and is the source of truth
+for the systemd unit, sysusers snippet and env file both install.
 
 ## Sarina's role in the distro
 
@@ -236,7 +228,7 @@ happens to ship on it:
   functional, and efficient over just "newest."
 
 Neither of these exists yet — they're direction, not implementation. As
-they take shape they'll live in the Sarina repo itself (`packages/sarina`),
+they take shape they'll live in the Sarina repo itself,
 with this repo consuming whatever surface it ends up exposing (a CLI
 command, a systemd timer, a Yggdrasil integration file, etc. — TBD).
 

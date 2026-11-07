@@ -15,7 +15,7 @@ itself, Yggdrasil's own documentation is the reference: its README (the programs
 | Piece | State |
 | --- | --- |
 | Package list | Resolves against Arch, BlackArch and `[labyrinth]` (checked 2026-11-07, when the move was made) |
-| ISO with Yggdrasil | **Not built yet.** CI stops before `mkarchiso` (see the README's Status) |
+| ISO with Yggdrasil | CI could not reach `mkarchiso` until 2026-11-07 (see the README's Status); the first run with the fixes started that day |
 | Live session, login screen, Settings, Agora, installer | **Not booted in a VM yet** (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)) |
 | The desktop packages themselves | Run on Labyrinth OS, which installs the same ones; not yet with Niflheim |
 | Real GPU hardware | Not tried with Niflheim |
@@ -39,7 +39,7 @@ From `profile/packages.x86_64`:
 - **Saved passwords:** GNOME Keyring (`gnome-keyring`), the same choice Yggdrasil made; I kept it on 2026-11-07.
 - **Wi-Fi, Bluetooth and sound:** Yggdrasil's Settings, over NetworkManager, BlueZ (`bluez`, `bluez-utils`) and PipeWire.
 - **Small tools the session uses:** `grim`, `slurp`, `wl-clipboard`, `brightnessctl`, `playerctl`, `libnotify`,
-  `noto-fonts-emoji`.
+  `noto-fonts-emoji`, and `btop` (Yggdrasil's Ctrl + Shift + Esc opens it in a terminal).
 
 Yggdrasil's other programs (the video player, the weather and the store's apps) are not on the image; Agora installs them.
 
@@ -60,10 +60,12 @@ the profile; see CLAUDE.md for why they are not in git.
 
 | Packages | Repository |
 | --- | --- |
-| `yggdrasil-*`, `liki-icon-theme`, `heimdall-git`, `labyrinth-keyring` | `[labyrinth]`: Labyrinth OS's signed package repository |
-| `hyprland`, `greetd`, `cage`, `ghostty`, `gnome-keyring`, `ufw`, `clamav` and the rest | Arch (`core`, `extra`, `multilib`) |
+| `yggdrasil-*`, `liki-icon-theme`, `heimdall-git`, `sarina-git`, `labyrinth-keyring` | `[labyrinth]`: Labyrinth OS's signed package repository |
+| `hyprland`, `greetd`, `cage`, `ghostty`, `gnome-keyring`, `btop`, `ufw`, `clamav` and the rest | Arch (`core`, `extra`, `multilib`) |
 | the security tools | Arch and `[blackarch]` (build only; see [ARCHITECTURE.md](ARCHITECTURE.md)) |
-| `sarina-git` | `[niflheim]`, built locally from `packages/pkgbuilds` (build only) |
+
+Nothing is built in this repository. Until 2026-11-07 `sarina-git` was built into a local `[niflheim]` repository from
+`packages/sarina`, a copy of Sarina that had been removed on 2026-10-08.
 
 `[labyrinth]` is the GitHub release `packages` of `Artifex-Technologies/Labyrinth_OS` (Labyrinth's
 `docs/PACKAGE_REPO.md`). Its packages are built for any 64-bit x86 CPU, not for the build machine's. It is listed last,
@@ -71,11 +73,10 @@ with `SigLevel = Required`, in both pacman configurations:
 
 - `profile/pacman.conf`, used by `mkarchiso` to build the image;
 - `profile/airootfs/etc/pacman.conf`, the live medium's and the installed system's. It lists Arch's repositories and
-  `[labyrinth]` only: no `[blackarch]` (its keyring is installed so it can be trusted later) and no `[niflheim]`.
+  `[labyrinth]` only: no `[blackarch]` (its keyring is installed so it can be trusted later).
 
-Being last means a package of the same name in a repository above wins. At build time that is `sarina-git` from
-`[niflheim]`. The installed system has no `[niflheim]`, so a later `pacman -Syu` takes `sarina-git` from `[labyrinth]`
-once that version is newer.
+Being last means a package of the same name in Arch's repositories (or `[blackarch]` at build time) always wins, so
+`[labyrinth]` can add packages but never replace the base system.
 
 The signing key is `C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`:
 
@@ -86,7 +87,7 @@ The signing key is `C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`:
 - **On the installed system**, `niflheim-install-cleanup` does the same during the install; `pacman-init.service` stays as
   a safety net and runs only when there is no keyring.
 
-So `pacman -Syu` brings desktop updates the same day Labyrinth gets them.
+So `pacman -Syu` brings desktop, Heimdall and Sarina updates the same day Labyrinth gets them.
 
 ## What Niflheim adds: integration files
 
@@ -103,25 +104,37 @@ are in `profile/airootfs/usr/share/yggdrasil/integrations/`:
 
 Heimdall (`heimdall-git`, from `[labyrinth]`) watches the system and Sarina; `ufw` and `clamav` come from Arch.
 
-- **Installed system:** `niflheim-install-cleanup` runs `heimdall-enable-defaults` (Heimdall's service, its daily updates
-  of threat lists, the security tracker and the DNS block list, the LAN scan and Wi-Fi notifications) and enables
+- **Live session and installed system:** the `heimdall-git` package switches Heimdall on when it is installed: its
+  pacman hook (`heimdall-install.hook`) runs `heimdall-enable-defaults`, and pacstrap runs that hook while the image is
+  built. That enables Heimdall's service, its daily updates of threat lists, the security tracker and the DNS block list,
+  the LAN scan and Wi-Fi notifications. So Heimdall runs in the live session too, and the installed system, a copy of the
+  image, has the same.
+- **During the install** `niflheim-install-cleanup` runs `heimdall-enable-defaults` again, as a safety net, and enables
   ClamAV's signature updates (`clamav-freshclam.service`).
-- **Live medium:** the clean-up does not run there. But the `heimdall-git` package also runs `heimdall-enable-defaults`
-  from a pacman hook on its first install, and pacstrap runs that hook while the image is built. So Heimdall is probably
-  on in the live session too. Not checked yet.
 - **Firewall:** `ufw` is installed but left off on purpose: listeners for the security tools need incoming connections.
   `sudo ufw enable` turns it on. (Labyrinth OS has it on, with incoming connections blocked.)
+
+## Known limit: locking the live session
+
+The live account has no password. `yggdrasil-idle` only observes unless `mode = act` is set in the user's
+`~/.config/yggdrasil/idle.conf`, and the live account has no such file, so the live session never locks by itself. A
+manual lock (Super + L) would strand the live user: there is no password to unlock with.
 
 ## Not checked yet
 
 All of this waits for the first ISO (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)):
 
 - The live medium starts to the Yggdrasil session; signing out shows the login screen.
-- The lock screen and the idle timer on the live medium. The live account has no password; the KDE setup turned its
-  screen locker off for that reason. Whether `yggdrasil-idle` locks the live session after a while, and whether it can
-  then be unlocked, is not known.
-- Whether Heimdall runs on the live medium (above).
+- Heimdall runs in the live session (above).
 - Settings, Agora and Ghostty open; `pacman -Syu` reads both Arch and `[labyrinth]`.
+
+## Sarina in the desktop
+
+`sarina-git` from `[labyrinth]` installs an `assistant` integration file, `/usr/share/yggdrasil/integrations/sarina.conf`,
+so Yggdrasil shows Sarina in the panel and Settings with the talk key Super + S. The programs that file names
+(`/usr/local/bin/labyrinth-sarina-ask`, `-speak`, `-warm`, `-setting`) are part of Labyrinth OS's image, not of the
+package, and Niflheim does not ship them. So on Niflheim the talk key has no program behind it, and Settings' Assistant
+page hides the controls whose programs are missing (Yggdrasil hides a control whose command is missing). Not fixed yet.
 
 ## Sarina contracts
 
@@ -141,8 +154,6 @@ Yggdrasil, so that panel is not coming. What stands:
 
 - **Built on the Sarina side:** `sarina fleet-usage` (Sarina's usage record), `fleet-status [--suggest]` (every agent's
   records read together, with headroom) and `fleet-launch` (Sarina's `docs/ECOSYSTEM.md` §1).
-- **The `sarina-git` PKGBUILD still installs Omarchy's collector**
-  (`/usr/share/omarchy/bin/omarchy-agent-usage-sarina`). Nothing on the image runs it.
 - **Yggdrasil's way to show something in the top bar** is a `bar-item` integration file (Yggdrasil's
   `docs/INTEGRATIONS.md`); Yggdrasil's own `yggdrasil-agent-usage` add-on, which shows Claude's limits, works that way.
   Sarina showing her usage there would be one more such file. Not built.

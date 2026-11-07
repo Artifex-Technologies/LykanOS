@@ -13,7 +13,8 @@ penetration testing, combining:
   installer. It is the desktop of [Labyrinth OS](https://github.com/Artifex-Technologies/Labyrinth_OS),
   and Niflheim installs the same packages. See [The desktop](#the-desktop)
 - **[Heimdall](https://github.com/Artifex-Technologies/Heimdall)**, the security
-  monitor Labyrinth OS uses too, switched on for the installed system
+  monitor Labyrinth OS uses too, running in the live session and on the
+  installed system
 - **[Sarina](https://github.com/Artifex-Technologies/Sarina)**, an AI agent integrated
   directly into the OS — for choosing and organising tooling, and for making
   sense of scan and capture output in place
@@ -65,8 +66,8 @@ from the profile.
   Agora (the app store), the lock screen, the password box, clipboard history, the colour picker, the calculator, spell
   checking and the installer. The terminal is Ghostty (Super + Return), the browser Firefox, and saved passwords are kept
   in GNOME Keyring.
-- **Where it comes from:** the `yggdrasil-*` packages, `heimdall-git` and `labyrinth-keyring` come from Labyrinth OS's
-  signed package repository (`[labyrinth]`, the GitHub release `packages` of Labyrinth_OS), built for any 64-bit x86 CPU.
+- **Where it comes from:** the `yggdrasil-*` packages, `heimdall-git`, `sarina-git` and `labyrinth-keyring` come from
+  Labyrinth OS's signed package repository (`[labyrinth]`, the GitHub release `packages` of Labyrinth_OS), built for any 64-bit x86 CPU.
   It is listed last, with `SigLevel = Required`, both for building the ISO and on the installed system, so `pacman -Syu`
   brings desktop updates the same day Labyrinth gets them.
 - **What Niflheim adds:** three integration files Yggdrasil reads: the accent colour, the installer's settings and
@@ -89,16 +90,11 @@ Niflheim_OS/
 ├── profile/                  # archiso profile used to build the live/install ISO
 │   ├── profiledef.sh         # ISO metadata (name, label, boot modes, etc.)
 │   ├── packages.x86_64       # package list installed into the ISO/target system
-│   ├── pacman.conf           # repos for the build: core/extra/multilib + [blackarch] + [niflheim] + [labyrinth]
+│   ├── pacman.conf           # repos for the build: core/extra/multilib + [blackarch] + [labyrinth]
 │   └── airootfs/             # files overlaid onto the live system's root (greetd, Yggdrasil integration files, the
 │                             #   installed system's pacman.conf, niflheim-install-cleanup)
-├── packages/
-│   ├── sarina/               # git submodule: Sarina source
-│   └── pkgbuilds/
-│       └── sarina-git/       # PKGBUILD building packages/sarina locally
-├── repo/                     # local pacman repo built from pkgbuilds (gitignored contents)
 ├── docs/                     # ARCHITECTURE.md, DESKTOP.md (Yggdrasil), INSTALLER.md, YGGDRASIL_MOVE.md
-├── scripts/                  # Build/dev helper scripts
+├── scripts/build.sh          # the ISO build
 ├── CLAUDE.md                 # Guidance for AI agents working in this repo
 └── .github/workflows/        # CI: build (and eventually publish) the ISO
 ```
@@ -111,19 +107,19 @@ Building requires an Arch Linux (or Arch container) environment with
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 
 ```bash
-sudo pacman -S --needed archiso base-devel git
-git clone --recurse-submodules https://github.com/Artifex-Technologies/Niflheim_OS.git
+sudo pacman -S --needed archiso curl git
+git clone https://github.com/Artifex-Technologies/Niflheim_OS.git
 cd Niflheim_OS
 
-# 1. Build the local package (Sarina) as a regular user (makepkg refuses to run as root)
-./scripts/build-local-packages.sh
-
-# 2. Build the ISO as root (mkarchiso requires it)
-sudo ./scripts/build.sh
+# Build the ISO as root (mkarchiso requires it)
+sudo bash scripts/build.sh
 ```
 
-`scripts/build.sh` also installs BlackArch's key, trusts the Labyrinth package key (fetched, then checked against its full
-fingerprint before it is signed locally) and makes the systemd service links in a work copy of the profile.
+Nothing is built locally: every package comes from a repository. `scripts/build.sh` installs BlackArch's key (BlackArch's
+`strap.sh`), trusts the Labyrinth package key (fetched, then checked against its full fingerprint before it is signed
+locally), makes the systemd service links in a work copy of the profile and runs `mkarchiso`. Until 2026-11-07 a first
+step built `sarina-git` into a local `[niflheim]` repository from `packages/sarina`, a copy of Sarina that had been
+removed on 2026-10-08.
 
 The resulting ISO is written to `out/`. Set `NIFLHEIM_WORK_DIR` and
 `NIFLHEIM_OUT_DIR` to put the build tree and output on a different filesystem
@@ -131,23 +127,21 @@ The resulting ISO is written to `out/`. Set `NIFLHEIM_WORK_DIR` and
 
 ### Building under WSL
 
-On Windows, WSL2 with an Arch distribution works. Two things matter:
-
-- **Clone into the WSL filesystem** (`~/`), never `/mnt/c`. Windows drives
-  don't preserve Unix permissions, and a build tree there would also try to
-  sync to OneDrive.
-- **`makepkg` refuses to run as root**, so create an ordinary user for stage 1
-  even though WSL logs you in as root by default.
+On Windows, WSL2 with an Arch distribution works. **Clone into the WSL
+filesystem** (`~/`), never `/mnt/c`: Windows drives don't preserve Unix
+permissions, and a build tree there would also try to sync to OneDrive.
 
 ## Status
 
 Early. Since 2026-11-07 the profile installs Yggdrasil instead of KDE Plasma, and the package list resolves against Arch,
 BlackArch and `[labyrinth]` (checked when the change was made).
 
-**No ISO of this setup has been built or booted yet.** The GitHub workflow builds an ISO on every push to `main` that
-touches `profile/`, `scripts/` or `packages/`, but every run since the repository moved here (2026-10-08) has stopped at
-the local-package step, before `mkarchiso`. Booting the ISO in a VM, installing and checking the result is step 6 of
-[docs/YGGDRASIL_MOVE.md](docs/YGGDRASIL_MOVE.md), and it is still open.
+**No ISO of this setup has been booted yet.** The GitHub workflow builds an ISO on every push to `main` that touches
+`profile/` or `scripts/`. Until 2026-11-07 every run since the repository moved here (2026-10-08) stopped before
+`mkarchiso` (the scripts had no executable bit, and the local Sarina build had no source); the first run without those
+problems started on 2026-11-07. Booting the ISO in a VM, installing and checking the result is step 6 of
+[docs/YGGDRASIL_MOVE.md](docs/YGGDRASIL_MOVE.md), and it is still open. It waits for `[labyrinth]` to carry a
+`yggdrasil-installer` with the install program (Labyrinth's daily publish on 2026-11-08).
 
 The installer has never been run on Niflheim. The same install program has installed Labyrinth OS in VMs. Install speed
 and the larger ISO that zstd compression produces have not been measured.
@@ -157,10 +151,11 @@ wallpaper, boot menu), and testing on real GPU hardware. Expect rapid changes.
 
 ## Sarina
 
-[`packages/sarina`](packages/sarina) is a git submodule pointing at
 [Sarina](https://github.com/Artifex-Technologies/Sarina) (formerly
-Niflheim Code Agent) — a local-first agent written in Go, with an optional
-Python helper, runnable against local open models. It already
+Niflheim Code Agent) is a local-first agent written in Go, with an optional
+Python helper, runnable against local open models. Niflheim installs it as
+`sarina-git` from `[labyrinth]`, the same package Labyrinth OS installs (its
+recipe is Labyrinth's `packages/pkgbuilds/sarina-git`). Sarina's repository
 ships its own Arch packaging (`packaging/arch/`) and a
 [`blackarch_compat`](https://github.com/Artifex-Technologies/Sarina/tree/main/blackarch_compat)
 harness built specifically for *this* distro: it installs BlackArch's
@@ -182,11 +177,7 @@ Sarina's intended role in the running system, none of which exists yet:
 - **Maintenance** — evaluate `pacman -Syu` and BlackArch updates for what is
   safe to apply automatically versus what needs a human look.
 
-To pull in the latest Sarina code:
-
-```bash
-./scripts/update-sarina.sh   # advances packages/sarina, stages the pointer bump
-```
+A newer Sarina reaches Niflheim through `pacman -Syu`, like the desktop.
 
 ## References
 
@@ -196,7 +187,7 @@ To pull in the latest Sarina code:
   into).
 - [Labyrinth OS](https://github.com/Artifex-Technologies/Labyrinth_OS) — the
   sister system whose signed package repository (`docs/PACKAGE_REPO.md` there)
-  supplies the desktop, Heimdall and the Labyrinth key.
+  supplies the desktop, Heimdall, Sarina and the Labyrinth key.
 - [Hyprland](https://hyprland.org) — the compositor Yggdrasil's session runs on.
 - [greetd](https://sr.ht/~kennylevinsen/greetd/) — the login manager that
   starts Yggdrasil's greeter.
@@ -206,13 +197,10 @@ To pull in the latest Sarina code:
   CLI installer; kept available as a scripted alternative to the graphical installer.
 - [archiso](https://github.com/archlinux/archiso) — the tool used to build
   this project's live/install ISO (see `profile/`).
-- [archlinux/devtools](https://github.com/archlinux/devtools) — official
-  clean-chroot package build/test tooling; reference point for isolating
-  package builds here.
 - [BlackArch](https://github.com/BlackArch/blackarch) — source of the
   security tooling repo and package catalog.
 - [Sarina](https://github.com/Artifex-Technologies/Sarina) — the AI agent
-  integrated into the OS (submodule at `packages/sarina`).
+  integrated into the OS (`sarina-git` from `[labyrinth]`).
 
 ## License
 

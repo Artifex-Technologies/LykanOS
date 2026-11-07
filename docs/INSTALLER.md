@@ -15,7 +15,7 @@ removed.
 | --- | --- |
 | `niflheim-installer.conf` | Written 2026-11-07 |
 | `yggdrasil-install-system` | Tested as Labyrinth's program in QEMU/OVMF VMs (2026-10-23 and 2026-10-25; Yggdrasil's `docs/INSTALLER.md`). **Never run on Niflheim** |
-| `yggdrasil-installer` in `[labyrinth]` | The build published on 2026-11-06 (`0.1.0.r420`) has only the window, not `yggdrasil-install-system`. An ISO needs a build made after Yggdrasil 0c54aa0 |
+| `yggdrasil-installer` in `[labyrinth]` | The build published on 2026-11-06 (`0.1.0.r420`) has only the window, not `yggdrasil-install-system`. Yggdrasil 0c54aa0 raised the package's version; Labyrinth's daily publish on 2026-11-08 puts the build with the program into `[labyrinth]` |
 | `niflheim-install-cleanup` | Updated 2026-11-07 (greetd, the Labyrinth key, Heimdall). An earlier version was simulated against a mock target root. **Never run in a real install** |
 | zstd squashfs | Set in `profiledef.sh`. **ISO size and install time not measured** |
 
@@ -69,9 +69,10 @@ The program finds the image at `/run/archiso/bootmnt/<ID>/x86_64/airootfs.sfs`, 
 | `name` | `Niflheim` (messages, the boot menu, the EFI entry, the disk labels) |
 | `cleanup` | `/usr/local/bin/niflheim-install-cleanup` |
 | `reserved_logins` | `heimdall sarina` (beyond every account the medium already has, root, live and greeter) |
+| `groups` | users, lp, video, network, storage, wheel, audio, kvm and `wireshark` (capturing without root); only those the system has |
 
-Everything else is the program's default (Yggdrasil's `docs/INSTALLER.md` lists the keys): kernel options `quiet`; the
-account's groups users, lp, video, network, storage, wheel, audio and kvm; a disk of at least 30 GB; no `finish` program;
+Everything else is the program's default (Yggdrasil's `docs/INSTALLER.md` lists the keys): kernel options `quiet`; a
+disk of at least 30 GB; no `finish` program;
 the plain GRUB menu (no `boot_menu_theme`); and no Browsers or optional-software pages. The file is live-medium only:
 the clean-up deletes it, with the launcher.
 
@@ -106,7 +107,7 @@ not being an installable root:
 | Regenerate `/etc/mkinitcpio.d/linux.preset` from `/usr/share/mkinitcpio/hook.preset` | The live preset is archiso's and builds an initramfs that looks for the live squashfs. Arch generates the preset from this template, so we use the same template rather than a hand-written copy |
 | Restore `/boot/vmlinuz-linux` | mkarchiso runs `find /boot -mindepth 1 -delete` on the image, so the target has no kernel. The package's copy under `/usr/lib/modules/*/vmlinuz` survives, and the script installs it the way Arch's own pacman hook does |
 | Initialise the pacman keyring if there is none, then put in the archlinux, blackarch and labyrinth keys | `pacman -Syu` needs the Labyrinth key (the desktop comes from the signed `[labyrinth]`), and Sarina needs a keyring to install anything later. mkarchiso builds the image without a keyring (`pacstrap -G`), and the live one made at start-up is not in the image, so the script normally creates it |
-| Run `heimdall-enable-defaults` and enable `clamav-freshclam.service` | Heimdall and ClamAV's signature updates on for the installed system. The firewall (`ufw`) is left off; see [DESKTOP.md](DESKTOP.md) |
+| Run `heimdall-enable-defaults` and enable `clamav-freshclam.service` | Heimdall is already on in the image (its package's pacman hook runs the same program); running it again is a safety net. ClamAV's signature updates are switched on only for the installed system. The firewall (`ufw`) is left off; see [DESKTOP.md](DESKTOP.md) |
 
 It fails loudly (non-zero exit) if the kernel is missing or the preset template is empty or malformed. Both would
 otherwise produce an install that completes and then does not boot.
@@ -125,7 +126,7 @@ nothing is fetched during the install. The copy, the clean-up and the initramfs 
   ISO in a UEFI VM, install, reboot and sign in. Things most likely to need a fix: the image path, the keyring step and
   the clean-up's list of live files.
 - **The `yggdrasil-installer` package.** The ISO needs one from `[labyrinth]` that includes `yggdrasil-install-system`
-  (see Status).
+  (see Status): an ISO built before Labyrinth's publish on 2026-11-08 has an installer window with no program to run.
 - **BIOS computers.** Only `archinstall` installs there.
 - **Branding.** The name is Niflheim's; the boot menu is GRUB's plain one, and there is no logo yet.
 - **Required disk space.** The program's default, 30 GB. The real installed size has not been measured.

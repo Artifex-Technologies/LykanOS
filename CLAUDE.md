@@ -13,11 +13,10 @@ checking it in a VM, is still open.
 
 Niflheim OS is an Arch-based security distribution. This repo contains **no
 application code** — it is an [archiso](https://github.com/archlinux/archiso)
-profile plus the packaging and build glue that turns it into a bootable ISO.
-Sarina lives in a separate repo, vendored here as a submodule. The desktop
-(Yggdrasil), Heimdall and `labyrinth-keyring` are packages from Labyrinth OS's
-signed repository (`[labyrinth]`); their code lives in the Yggdrasil, Heimdall
-and Labyrinth_OS repos, not here.
+profile plus the build glue that turns it into a bootable ISO. Nothing is
+built here: the desktop (Yggdrasil), Sarina, Heimdall and `labyrinth-keyring`
+are packages from Labyrinth OS's signed repository (`[labyrinth]`); their code
+and recipes live in the Yggdrasil, Sarina, Heimdall and Labyrinth_OS repos.
 
 Read `docs/ARCHITECTURE.md` before making design decisions; it records *why*
 the current structure exists (a small baked-in tool core over BlackArch
@@ -39,33 +38,26 @@ simulating what a tool will do over assuming it works — see the
 
 ## Build commands
 
-Two stages, and the root/non-root split is mandatory, not stylistic:
-`makepkg` refuses to run as root, and `mkarchiso` requires it.
+One step, as root (`mkarchiso` requires it):
 
 ```bash
-# 1. Build local packages (sarina-git) into repo/x86_64/
-#    MUST be a regular user.
-./scripts/build-local-packages.sh
-
-# 2. Build the ISO. MUST be root. Reads repo/x86_64/ from step 1.
-sudo ./scripts/build.sh
-
-# Advance the Sarina submodule and stage the pointer bump
-./scripts/update-sarina.sh
+sudo bash scripts/build.sh
 ```
 
-`scripts/build.sh` also installs BlackArch's key (BlackArch's `strap.sh`),
-trusts the Labyrinth package key by its full fingerprint
+`scripts/build.sh` installs BlackArch's key (BlackArch's `strap.sh`), trusts
+the Labyrinth package key by its full fingerprint
 (`C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`: fetched, fingerprint checked, then
-`pacman-key --lsign-key`) and makes the systemd service links in the work copy
-of the profile (see below). It honours `NIFLHEIM_WORK_DIR` and
-`NIFLHEIM_OUT_DIR` for build hosts where `work/` and `out/` must sit on a
-different filesystem; CI uses these to move the build off the runner's small
-root disk.
+`pacman-key --lsign-key`), makes the systemd service links in a work copy of
+the profile (see below) and runs `mkarchiso`. Until 2026-11-07 a first,
+non-root step built `sarina-git` into a local `[niflheim]` repo from
+`packages/sarina`, a copy of Sarina that had been removed on 2026-10-08.
 
-There is no test suite, linter, or build step for this repo itself. Sarina has
-its own (`packages/sarina`, own CLAUDE.md) — do not run or modify those from
-here.
+`scripts/build.sh` honours `NIFLHEIM_WORK_DIR` and `NIFLHEIM_OUT_DIR` for build
+hosts where `work/` and `out/` must sit on a different filesystem; CI uses these
+to move the build off the runner's small root disk.
+
+There is no test suite, linter, or build step for this repo itself. Sarina,
+Yggdrasil and Heimdall have their own, in their repositories.
 
 ## Things that will bite you
 
@@ -85,19 +77,15 @@ numbered menu and then silently take option 1, which is often absurd
 (`tesseract-data-afr` for `tessdata`). New packages that introduce a provider
 choice need an explicit entry in the "explicit provider choices" section.
 
-**`profile/pacman.conf` contains a `@@NIFLHEIM_REPO_DIR@@` placeholder.** It is
-deliberate — `scripts/build.sh` substitutes an absolute path into a *work copy*
-so the checked-in file stays portable. Do not "fix" it to a real path.
-
 **There are two `pacman.conf` files, and `[labyrinth]` is last in both.**
-`profile/pacman.conf` is for the build (with `[blackarch]` and the local
-`[niflheim]`); `profile/airootfs/etc/pacman.conf` is the live medium's and the
-installed system's (Arch's repos and `[labyrinth]` only). `[labyrinth]` has
-`SigLevel = Required` and is last on purpose: a package of the same name above
-it wins (`sarina-git` from `[niflheim]` at build time). Do not vendor copies of
-the `yggdrasil-*` packages, `heimdall-git` or `labyrinth-keyring` into
-`packages/pkgbuilds`: they come from `[labyrinth]`, so updates reach Niflheim
-and Labyrinth the same day.
+`profile/pacman.conf` is for the build (with `[blackarch]`);
+`profile/airootfs/etc/pacman.conf` is the live medium's and the installed
+system's (Arch's repos and `[labyrinth]` only). `[labyrinth]` has
+`SigLevel = Required` and is last on purpose: a package of the same name in a
+repository above it wins, so it can add packages but never replace the base
+system. Do not vendor recipes for the `yggdrasil-*` packages, `sarina-git`,
+`heimdall-git` or `labyrinth-keyring` into this repo: they come from
+`[labyrinth]`, so updates reach Niflheim and Labyrinth the same day.
 
 **Do not commit symlinks under `profile/airootfs/`; add service links to
 `scripts/build.sh`.** This checkout has `core.symlinks=false`, so a committed
@@ -161,16 +149,13 @@ then panics at boot.
   GitHub uploads **no log at all** for the job — a 22-byte empty zip. The
   build step therefore prints free space every 30s so the log tail always
   shows which filesystem ran out. Keep that watcher.
-- **Submodule token.** `actions/checkout` uses the `SARINA_REPO_TOKEN` secret
-  when it is set (Contents: read on *both* repos, since it replaces the token
-  for the whole checkout), from when Sarina was a private repo. Sarina is
-  public now, so the default token is enough.
+- **Nothing to build first.** The job checks out this repo only (no
+  submodule, no token) and runs `bash ./scripts/build.sh`.
 
-**No run has produced an ISO since the repository moved here (2026-10-08).**
-Every run stops at "Build local packages": the scripts are stored without the
-executable bit (`sudo: ./scripts/build-local-packages.sh: command not found`),
-and the tree has no gitlink for `packages/sarina` (only `.gitmodules`), so the
-script would stop next at "submodule looks empty".
+Until 2026-11-07 (7d2bfe5) no run got as far as `mkarchiso`: the scripts were
+stored without the executable bit, and the local Sarina build had no source.
+Keep `scripts/build.sh` at mode `100755` in git (`git ls-files -s`), and keep CI
+calling it through `bash` so a lost bit cannot stop the build again.
 
 Diagnosing a failed run without `gh` installed: the REST API works with a PAT
 carrying Actions: read. An empty log zip plus steps with `conclusion: None`
@@ -200,7 +185,7 @@ conflicts and provider menus that CI would only surface hours later, or not at
 all:
 
 ```bash
-mapfile -t PKGS < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64 | grep -vx sarina-git)
+mapfile -t PKGS < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64)
 pacman -Sp --print-format '%r/%n' "${PKGS[@]}"   # must exit 0, print no provider menu
 ```
 
@@ -211,7 +196,8 @@ distro is.
 ## Working alongside other Claude instances
 
 Other instances work on the sibling projects in this ecosystem — chiefly
-**Sarina** (`Artifex-Technologies/Sarina`, vendored here as `packages/sarina`). They
+**Sarina** (`Artifex-Technologies/Sarina`, installed here as `sarina-git` from
+`[labyrinth]`). They
 have repo access. This section is the coordination surface: keep it a
 **contract**, not a message log. Anything that is a passing note belongs in a
 commit message or the PR, not here — CLAUDE.md loads into every session, so
@@ -222,41 +208,28 @@ word `CONTRACT:` so the other side can grep for it.
 
 ### What Niflheim consumes from Sarina
 
-`packages/pkgbuilds/sarina-git/PKGBUILD` builds the submodule directly. It
-will break if any of these move or disappear — verified present as of the
-`9508cc0` submodule pointer (the Go rewrite; `build()`/`package()` run on Arch):
+The `sarina-git` package from `[labyrinth]`, built from Labyrinth's recipe
+(`packages/pkgbuilds/sarina-git` in Labyrinth_OS); its packaging contract with
+the Sarina repo is kept there, not here. What Niflheim itself relies on:
 
-| Path in the Sarina repo | Used for |
-| --- | --- |
-| `go/go.mod`, `go/cmd/sarina` | `go build` of the single static binary |
-| `python/sarina_helpers/pyproject.toml` | `python -m build --wheel --no-isolation` for the optional ML/voice helper |
-| `packaging/arch/sarina-service.service` | installed to `/usr/lib/systemd/system/` |
-| `packaging/arch/sarina.sysusers` | installed to `/usr/lib/sysusers.d/sarina.conf` |
-| `packaging/arch/service.env.example` | installed to `/etc/sarina/` |
-| `README.md` | installed to `/usr/share/doc/sarina-git/` |
-| `LICENSE` | installed to `/usr/share/licenses/sarina-git/LICENSE` |
+- the package name `sarina-git` in `profile/packages.x86_64`, and the entry
+  points `sarina`, `sarina-gui` and `sarina-service` on `PATH`;
+- the `sarina` account name, reserved in `niflheim-installer.conf`
+  (`reserved_logins`) so the installer never offers it;
+- Heimdall's `contained` file and release command (`niflheim-security.conf`),
+  which act on Sarina.
 
-Runtime dependency declared in that PKGBUILD is only `glibc` (the Go binary is
-static); `python` and `python-onnxruntime` are optional dependencies of the
-helper. **Keep these in sync with Sarina's real dependencies**, and every one
-must exist in Arch's repos. A dependency that is PyPI-only needs a PKGBUILD of
-its own here first. (The old Python build needed `python-fastapi`, `uvicorn`
-— no `python-` prefix on Arch — and `python-pydantic`; they are gone.)
+The package also installs a Yggdrasil `assistant` integration
+(`/usr/share/yggdrasil/integrations/sarina.conf`) whose programs
+(`/usr/local/bin/labyrinth-sarina-*`) are part of Labyrinth's image, not of the
+package, so on Niflheim they are missing (`docs/DESKTOP.md`, "Sarina in the
+desktop").
 
-Entry points the ISO expects on `PATH`: `sarina`, `sarina-gui`,
-`sarina-service` — now one binary plus two symlinks to it (the binary picks its
-command from the name it was started as).
-
-**Licensing caveat (updated 2026-10-06).** As of the `9508cc0` submodule pointer
-the Sarina working tree no longer contains the unlicensed upstream code: the
-core was rewritten clean-room in Go and the derived Python deleted (see
-`packages/sarina/NOTICE.md` and `docs/PROVENANCE.md`; a word-sequence audit found
-0.01% overlap). Sarina is now MIT-licensed (owner decision 2026-10-06, installed
-by the PKGBUILD as `/usr/share/licenses/sarina-git/LICENSE`). Still open and owned
-by the Sarina owner: Sarina's git history still contains the old code. An ISO ships the built
-`sarina-git` package, not the history, but this is not legal advice: confirm with
-the owner before a publicly distributed ISO, and note that anyone fetching the
-submodule gets the history. A private/internal ISO is unaffected.
+**Licensing.** The package is MPL-2.0 (its `LICENSE` and `license` field).
+Sarina's git history still contains code from before its clean-room rewrite
+(Sarina's `NOTICE.md` and `docs/PROVENANCE.md`). An ISO ships the built
+package, not the history, but this is not legal advice: confirm with the owner
+before a publicly distributed ISO.
 
 ### What Niflheim needs Sarina to provide (not built yet)
 
@@ -312,14 +285,12 @@ the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
    agents in auto-approve modes is a privilege-escalation path). **Built on the
    Sarina side** as `sarina fleet-usage`, `fleet-status` and `fleet-launch`
    (Sarina's `docs/ECOSYSTEM.md` §1). The display was to be Omarchy's agents
-   panel, which is not coming now that the desktop is Yggdrasil; the
-   `sarina-git` PKGBUILD still installs the Omarchy collector
-   `/usr/share/omarchy/bin/omarchy-agent-usage-sarina`, which nothing on the
-   image runs. Yggdrasil's way to show it would be a `bar-item` integration
-   file (Yggdrasil's `docs/INTEGRATIONS.md`). See `docs/DESKTOP.md`.
+   panel, which is not coming now that the desktop is Yggdrasil. Yggdrasil's
+   way to show it would be a `bar-item` integration file (Yggdrasil's
+   `docs/INTEGRATIONS.md`). See `docs/DESKTOP.md`.
 
-### Advancing the submodule
+### New Sarina versions
 
-`./scripts/update-sarina.sh` moves the pointer and stages it. After bumping,
-re-check the table above before committing — a green ISO build is the only
-thing that proves the packaging contract still holds.
+A new Sarina reaches Niflheim when Labyrinth's publish puts a new `sarina-git`
+into `[labyrinth]`: the next ISO build and `pacman -Syu` pick it up. Nothing in
+this repo changes for it.
