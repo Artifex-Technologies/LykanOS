@@ -16,7 +16,7 @@ jobs:
     container:
       image: archlinux:latest
       options: --privileged
-      # A full BlackArch + Plasma pacstrap does not come close to fitting in
+      # A full BlackArch + desktop pacstrap does not come close to fitting in
       # the ~14 GB free on a GitHub runner's root disk (where the container's
       # writable layer lives). /mnt is the runner's separate ~70 GB scratch
       # SSD — mount it in so the work tree, package cache and ISO live there.
@@ -58,7 +58,7 @@ jobs:
         run: |
           pacman -Syu --noconfirm --needed archiso curl base-devel sudo
 
-      - name: Build local packages (sarina-git, calamares; as non-root, makepkg refuses root)
+      - name: Build local packages (sarina-git; as non-root, makepkg refuses root)
         run: |
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers

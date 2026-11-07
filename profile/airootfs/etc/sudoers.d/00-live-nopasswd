@@ -1,3 +1,4 @@
 # The live user has no password, so a password prompt is unanswerable.
-# Installed medium only -- Calamares writes the installed system's sudoers.
+# Live medium only -- the installer (yggdrasil-install-system) writes the installed system's sudoers,
+# and niflheim-install-cleanup removes this file.
 %wheel ALL=(ALL:ALL) NOPASSWD: ALL

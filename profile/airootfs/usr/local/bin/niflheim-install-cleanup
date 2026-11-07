@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Runs inside the target system, right after Calamares' unpackfs has copied the
-# live image onto the disk (see /etc/calamares/settings.conf). Removes the
-# live-medium-only pieces and restores what mkarchiso strips, so the installed
-# system boots on its own and has a real login.
+# Runs inside the target system, right after the installer (yggdrasil-install-system,
+# named in /usr/share/yggdrasil/integrations/niflheim-installer.conf) has copied the
+# live image onto the disk. Removes the live-medium-only pieces and restores what
+# mkarchiso strips, so the installed system boots on its own and has a real login.
 #
 # Everything here exists because the live image is not an installable root:
 #
 #  * mkarchiso empties /boot, so there is no kernel to boot.
 #  * the initramfs preset and drop-in are archiso's, building an initramfs that
 #    looks for the live squashfs and cannot mount a real root.
-#  * the live account is passwordless: sudo, polkit and SDDM autologin were all
-#    opened up for it, and Plasma's screen locker was turned off.
+#  * the live account is passwordless: sudo, polkit and the login screen's
+#    automatic sign-in (greetd's live.toml) were all opened up for it.
 #
 # Keep the removal list in step with profile/airootfs/etc.
 
@@ -18,27 +18,33 @@ set -euo pipefail
 
 say() { printf 'niflheim-install-cleanup: %s\n' "$*"; }
 
-# 1. Seed new users with the live user's desktop config. Both Hyprland looks and
-#    the Plasma fallback live under /home/live/.config; without this the
-#    installed user gets a bare desktop. /etc/skel is what useradd copies from,
-#    so Calamares' users job picks it up and handles ownership.
+# 1. Seed new users with the live user's desktop config, if it has any (Yggdrasil
+#    writes its own on the first sign-in). /etc/skel is what useradd copies from,
+#    so the installer's useradd picks it up and handles ownership.
 if [[ -d /home/live/.config ]]; then
   install -d -m 0755 /etc/skel
   cp -a /home/live/.config /etc/skel/
+  # cp -a kept the live user's uid (1000), which is the first installed account's: the
+  # template every new account starts from belongs to root and is readable by all.
+  chown -R 0:0 /etc/skel/.config
+  chmod -R u+rwX,go+rX,go-w /etc/skel/.config
   say "seeded /etc/skel from the live user's .config"
 fi
 
 # 2. Remove the live-only files and the account's home directory.
 live_only=(
   /etc/mkinitcpio.conf.d/archiso.conf
-  /etc/sddm.conf.d/autologin.conf
+  /etc/greetd/live.toml
+  /etc/systemd/system/greetd.service.d/live.conf
   /etc/sudoers.d/00-live-nopasswd
   /etc/polkit-1/rules.d/49-live-nopasswd.rules
   /etc/sysusers.d/live.conf
   /etc/tmpfiles.d/live-home.conf
-  /etc/xdg/kscreenlockerrc
+  /usr/share/applications/niflheim-install.desktop
+  /usr/share/yggdrasil/integrations/niflheim-installer.conf
 )
 rm -f -- "${live_only[@]}"
+rmdir -- /etc/systemd/system/greetd.service.d 2>/dev/null || true
 rm -rf -- /home/live
 say "removed live-only configuration"
 
@@ -72,10 +78,22 @@ fi
 say "restored /boot/vmlinuz-linux and the stock mkinitcpio preset"
 
 # 5. Make sure pacman can verify packages. The installed system needs this for
-#    `pacman -Syu` and for Sarina to install anything later. Only initialise if
-#    the image did not carry a keyring.
+#    `pacman -Syu` (the desktop comes from the signed [labyrinth] repository) and
+#    for Sarina to install anything later. Initialise only if the image did not
+#    carry a keyring; the keys are put in either way.
 if [[ ! -s /etc/pacman.d/gnupg/pubring.gpg ]]; then
   say "no pacman keyring in the image; initialising"
   pacman-key --init
-  pacman-key --populate archlinux blackarch
+fi
+pacman-key --populate archlinux blackarch labyrinth
+
+# 6. Heimdall on the installed system: its service, daily updates (threat lists, security tracker, DNS block list) and Wi-Fi
+#    notifications, as Heimdall's package switches them on (heimdall-enable-defaults), and ClamAV's signature updates.
+#    Not on the live medium. The firewall (ufw) is installed but left off: listeners for the security tools need incoming
+#    connections; `sudo ufw enable` turns it on (Labyrinth OS has it on, incoming blocked).
+if command -v heimdall-enable-defaults >/dev/null 2>&1; then
+  heimdall-enable-defaults && say "switched on Heimdall's defaults" || say "warning: could not switch on Heimdall's defaults"
+fi
+if [[ -e /usr/lib/systemd/system/clamav-freshclam.service ]]; then
+  systemctl enable clamav-freshclam.service >/dev/null 2>&1 && say "enabled ClamAV signature updates" || say "warning: could not enable ClamAV signature updates"
 fi

@@ -2,7 +2,8 @@
 # Builds every PKGBUILD under packages/pkgbuilds/ and adds the results to
 # the local [niflheim] pacman repo at repo/x86_64/. Run this as a regular
 # user before scripts/build.sh (whenever a submodule like packages/sarina
-# has moved to a new commit, or a vendored PKGBUILD like calamares changes).
+# has moved to a new commit). The desktop, Heimdall and Limbo are not built here:
+# they come from Labyrinth OS's signed repository ([labyrinth] in profile/pacman.conf).
 #
 # Requires: Arch Linux (or an Arch container), base-devel, git.
 

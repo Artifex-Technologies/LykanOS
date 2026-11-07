@@ -1,0 +1,12 @@
+# The login screen: greetd runs Yggdrasil's greeter inside cage, a tiny compositor. On the live medium greetd reads
+# live.toml instead (the same, plus signing the live user in by itself; see greetd.service.d/live.conf).
+[terminal]
+# a console of its own, with nothing printed on it: between a session and the login screen the screen is black, not the
+# start-up messages left on the first console
+vt = 7
+
+[default_session]
+# the console is cleared before the login screen and again right after it (and what cage prints goes nowhere), so between
+# signing in and the desktop there is no text from it on the screen
+command = "sh -c 'printf \"\\033[2J\\033[3J\\033[H\\033[?25l\"; cage -s -- /usr/bin/yggdrasil-greeter >/dev/null 2>&1; s=$?; printf \"\\033[2J\\033[3J\\033[H\\033[?25l\"; exit $s'"
+user = "greeter"
