@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Push every commit as you make it; don't ask me first. Before pushing, check the diff names no host name, network address, SSID
+or MAC address.
+
+The desktop is moving from KDE/Calamares to Yggdrasil (decided 2026-11-07): read `docs/YGGDRASIL_MOVE.md` first. Until that is
+done, the KDE, SDDM and Calamares notes below describe what is in the profile today, not where it is going.
+
 ## What this repo is
 
 Niflheim OS is an Arch-based security distribution. This repo contains **no
