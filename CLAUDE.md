@@ -6,14 +6,15 @@ Push every commit as you make it; don't ask me first. Before pushing, check the 
 or MAC address.
 
 Since 2026-11-07 the desktop is Yggdrasil on Hyprland, with greetd and Yggdrasil's installer, the same as Labyrinth OS's
-(until then KDE Plasma, SDDM and Calamares). `docs/YGGDRASIL_MOVE.md` records the move; its step 6, building the ISO and
-checking it in a VM, is still open.
+(until then KDE Plasma, SDDM and Calamares). `docs/YGGDRASIL_MOVE.md` records the move. Its step 6 is half done: CI builds
+the ISO (the 2026-11-08 one is the first with the install program); booting it in a VM and installing are still open.
 
 ## What this repo is
 
 LykanOS (named Niflheim OS until 2026-11-07, Chymaera OS before that) is an Arch-based security distribution. This repo contains **no
 application code** — it is an [archiso](https://github.com/archlinux/archiso)
-profile plus the build glue that turns it into a bootable ISO. Nothing is
+profile plus the build glue that turns it into a bootable ISO, and the
+scripts that make its logo and wallpaper (`scripts/gen-*.py`). Nothing is
 built here: the desktop (Yggdrasil), Sarina, Heimdall and `labyrinth-keyring`
 are packages from Labyrinth OS's signed repository (`[labyrinth]`); their code
 and recipes live in the Yggdrasil, Sarina, Heimdall and Labyrinth_OS repos.
@@ -76,6 +77,8 @@ sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64 | gr
 numbered menu and then silently take option 1, which is often absurd
 (`tesseract-data-afr` for `tessdata`). New packages that introduce a provider
 choice need an explicit entry in the "explicit provider choices" section.
+One is still open: the 2026-11-08 build printed a menu for `java-runtime>=17`
+(11 providers) and took option 1, `jdk-openjdk`.
 
 **There are two `pacman.conf` files, and `[labyrinth]` is last in both.**
 `profile/pacman.conf` is for the build (with `[blackarch]`);
@@ -86,6 +89,12 @@ repository above it wins, so it can add packages but never replace the base
 system. Do not vendor recipes for the `yggdrasil-*` packages, `sarina-git`,
 `heimdall-git` or `labyrinth-keyring` into this repo: they come from
 `[labyrinth]`, so updates reach LykanOS and Labyrinth the same day.
+
+**A `[labyrinth]` package goes into `packages.x86_64` only once Labyrinth's
+publish carries it.** Otherwise pacstrap stops at `target not found` and no ISO
+is built: from b81ecc2 (`yggdrasil-taskmanager`, 2026-11-07) until the publish
+of 2026-11-08, every CI run failed that way. Check the release `packages` of
+Labyrinth_OS first.
 
 **Do not commit symlinks under `profile/airootfs/`; add service links to
 `scripts/build.sh`.** This checkout has `core.symlinks=false`, so a committed
@@ -121,7 +130,10 @@ Traps, each of which produces an install that "succeeds" and then fails later:
 - The program finds the image at `/run/archiso/bootmnt/<ID>/x86_64/airootfs.sfs`,
   with `ID` from `/etc/os-release` (`lykanos`), which must equal `install_dir`
   in `profiledef.sh` (not archiso's `arch`). Change one and you must change the
-  other, or set `medium` in `lykanos-installer.conf`.
+  other, or set `medium` in `lykanos-installer.conf`. The ID is also named in
+  the sibling repos (f15f01e's `CONTRACT:` note): Limbo's host policy
+  (`internal/hostpolicy`), for one, refuses device passthrough on a host whose
+  ID is `lykanos`.
 - The program installs on UEFI computers only. The medium also boots BIOS
   (syslinux); there only `archinstall` installs.
 - Changes to the install steps themselves belong in Yggdrasil
@@ -155,7 +167,9 @@ then panics at boot.
 Until 2026-11-07 (7d2bfe5) no run got as far as `mkarchiso`: the scripts were
 stored without the executable bit, and the local Sarina build had no source.
 Keep `scripts/build.sh` at mode `100755` in git (`git ls-files -s`), and keep CI
-calling it through `bash` so a lost bit cannot stop the build again.
+calling it through `bash` so a lost bit cannot stop the build again. Since then
+a successful run takes 14 to 21 minutes and uploads the ISO as the artifact
+`lykanos-iso` (4.2 GiB on 2026-11-08).
 
 Diagnosing a failed run without `gh` installed: the REST API works with a PAT
 carrying Actions: read. An empty log zip plus steps with `conclusion: None`
@@ -175,7 +189,8 @@ Two constraints follow from that, and both are easy to break:
   saying what offline capability is being given up.
 - **Everything past the core belongs to Sarina**, including generating
   `.desktop` entries and start-menu categories for newly installed tools.
-  Neither capability exists yet. Do not add tools to `packages.x86_64` to
+  Install-time selection does not exist yet; generating entries is wired since
+  2026-11-07 (item 2 below). Do not add tools to `packages.x86_64` to
   work around that gap — it makes the eventual agent-side work harder to
   justify and quietly re-creates the problem the categories caused.
 
@@ -256,9 +271,10 @@ the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
    terminal. **Remapping** entries: BlackArch packages that do ship one use
    non-standard `X-BlackArch-*` categories (`burpsuite` declares
    `X-BlackArch-Fuzzer;X-BlackArch-Proxy;X-BlackArch-Scanner;X-BlackArch-Webapp`).
-   Yggdrasil's start menu makes its folders from the freedesktop main
-   categories only (`packages/panel/src/apps.rs` in Yggdrasil), so those land
-   in its **Other** folder; it has no Security folder.
+   Yggdrasil's start menu makes its folders from the freedesktop categories,
+   Security first since Yggdrasil 7236d54 (`folder_of` in
+   `packages/panel/src/apps.rs`), so entries that declare only `X-BlackArch-*`
+   categories land in its **Other** folder.
 
    A useful target is an `X-BlackArch-*` → freedesktop category mapping plus
    synthesised entries that launch CLI tools in a terminal (Ghostty). The image's

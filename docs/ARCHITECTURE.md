@@ -9,19 +9,24 @@
    isn't quietly lost to hand-trimming.
 2. **Security tooling**: [BlackArch](https://github.com/BlackArch/blackarch),
    added as a repo (`[blackarch]` in `profile/pacman.conf`) rather than
-   forked. The ISO bakes in only a small hand-picked core (~27 packages in
-   `profile/packages.x86_64`); everything beyond it is installed after the
-   fact, agent-assisted, by Sarina. See "Tool delivery" below for why.
+   forked. The ISO bakes in only a small hand-picked core (26 tools and
+   `blackarch-keyring` in `profile/packages.x86_64`); everything beyond it is
+   installed after the fact, agent-assisted, by Sarina. See "Tool delivery"
+   below for why.
 3. **Desktop**: [Yggdrasil](https://github.com/Artifex-Technologies/Yggdrasil)
    on Hyprland, the same desktop as Labyrinth OS, with greetd and Yggdrasil's
    greeter as the login screen. Its packages come from Labyrinth OS's signed
    package repository (`[labyrinth]`, last in both `pacman.conf` files,
-   `SigLevel = Required`), not from copies in this repo; LykanOS adds only
-   integration files (`profile/airootfs/usr/share/yggdrasil/integrations/`).
+   `SigLevel = Required`), not from copies in this repo; LykanOS adds
+   integration files (`profile/airootfs/usr/share/yggdrasil/integrations/`), its
+   look and the start-menu hook for the security tools.
    NetworkManager, BlueZ and PipeWire sit under it (`profile/packages.x86_64`
    layers these on top of releng's more CLI/live-boot-oriented networking and
-   audio stack). Until 2026-11-07 the desktop was KDE Plasma with SDDM. Details
-   and what is unverified are in [DESKTOP.md](DESKTOP.md).
+   audio stack), and since 2026-11-07 the laptop and graphics set from
+   Labyrinth's base list (Vulkan for Intel and AMD graphics, Intel video
+   decoding, the sound mixer setups, power modes). Until 2026-11-07 the desktop
+   was KDE Plasma with SDDM. Details and what is unverified are in
+   [DESKTOP.md](DESKTOP.md).
 4. **Installer**: Yggdrasil's installer (`yggdrasil-installer`, with its
    install program `yggdrasil-install-system`), shared with Labyrinth OS and
    configured by `lykanos-installer.conf`; LykanOS's own clean-up is
@@ -34,9 +39,10 @@
    was Calamares.
 5. **Security monitor**: [Heimdall](https://github.com/Artifex-Technologies/Heimdall)
    (`heimdall-git` from `[labyrinth]`), shared with Labyrinth OS, with ClamAV;
-   installed but off until it has rules for each BlackArch tool
-   (`/etc/heimdall/defaults-off`, 2026-11-07). `ufw` is installed but off. See
-   [DESKTOP.md](DESKTOP.md).
+   installed but off (`/etc/heimdall/defaults-off`, 2026-11-07). Its rules for
+   the security tools are in force (`/etc/heimdall/security-tools`, Heimdall's
+   `docs/TOOL_RULES.md`); it stays off until they are tested with the tools in a
+   LykanOS VM. `ufw` is installed but off. See [DESKTOP.md](DESKTOP.md).
 6. **AI agent**: [Sarina](https://github.com/Artifex-Technologies/Sarina),
    installed as `sarina-git` from `[labyrinth]`, the same package Labyrinth OS
    installs. Nothing is built in this repo: until 2026-11-07 `sarina-git` was
@@ -77,7 +83,10 @@ A hand-picked core covering recon, capture, wireless, password attacks, web,
 exploitation, reversing and forensics. Named packages, not groups — the size
 is predictable and the conflict surface is nearly nil. Verified against live
 repos: 837 packages resolved including dependencies, no provider menus, no
-conflicts, ~3.2 GiB compressed (measured with the earlier KDE desktop).
+conflicts, ~3.2 GiB compressed (measured with the earlier KDE desktop). The ISO
+with Yggdrasil, built by CI on 2026-11-08: 874 packages including dependencies,
+4.2 GiB with zstd, and one provider menu left unpinned (`java-runtime>=17`;
+CLAUDE.md, "Pin providers explicitly").
 
 The core exists for one reason worth stating plainly: **the live session has
 to be useful with no network.** Air-gapped client sites, SCIFs and offline
@@ -96,8 +105,13 @@ Everything past the core:
   generates `.desktop` entries and start-menu categories as tools are added,
   so the organisation is maintained rather than hand-written here.
 
-Neither exists yet. Until they do, the core is all the distro ships, and that
-is a deliberate floor rather than a placeholder — see "Open questions".
+Guided selection does not exist yet. Categorisation exists in a first form
+since 2026-11-07: `lykanos-tool-menu`, run by a pacman hook, has Sarina's
+`desktop-audit` write a start-menu entry for each installed security tool
+([DESKTOP.md](DESKTOP.md), "The tools in the start menu"); remapping the
+`X-BlackArch-*` categories of entries that tools ship themselves is not done.
+Until selection exists, the core is all the distro ships, and that is a
+deliberate floor rather than a placeholder — see "Open questions".
 
 ## Validating additions: `blackarch_compat`
 
@@ -191,20 +205,23 @@ exist at build time.
 
 ## Package flow
 
-```
+```text
 Yggdrasil, Heimdall and Sarina repos
-        │  Labyrinth's recipes (Labyrinth_OS packages/pkgbuilds), built and signed by its publish
+        │  recipes in Yggdrasil's packages/pkgbuilds (the yggdrasil-* packages, saga-md, liki-icon-theme)
+        │  and Labyrinth_OS's packages/pkgbuilds (sarina-git, heimdall-git, labyrinth-keyring);
+        │  built and signed by Labyrinth's publish
         ▼
 [labyrinth]   (GitHub release "packages" of Labyrinth_OS; Labyrinth's docs/PACKAGE_REPO.md)
         │
         ▼  scripts/build.sh → mkarchiso, with Arch and [blackarch] (profile/pacman.conf)
-out/*.iso
+out/lykanos-<date>-x86_64.iso   (in CI: the workflow artifact lykanos-iso)
 ```
 
 Nothing is built in this repository. A new Sarina, desktop or Heimdall reaches
 the next ISO, and installed systems through `pacman -Syu`, once Labyrinth's
-publish has put it in `[labyrinth]`. The `sarina-git` recipe is Labyrinth's
-`packages/pkgbuilds/sarina-git`; the AUR-facing PKGBUILD that builds from
+publish has put it in `[labyrinth]`. A package added to `packages.x86_64`
+before the publish carries it stops the build (CLAUDE.md). The `sarina-git`
+recipe is Labyrinth's `packages/pkgbuilds/sarina-git`; the AUR-facing PKGBUILD that builds from
 tagged release tarballs lives in the Sarina repo itself, at
 `packaging/arch/PKGBUILD` (`pkgname=sarina` there), and is the source of truth
 for the systemd unit, sysusers snippet and env file both install.
@@ -228,10 +245,12 @@ happens to ship on it:
   its last `blackarch_compat` run), with an explicit bias toward secure,
   functional, and efficient over just "newest."
 
-Neither of these exists yet — they're direction, not implementation. As
-they take shape they'll live in the Sarina repo itself,
-with this repo consuming whatever surface it ends up exposing (a CLI
-command, a systemd timer, a Yggdrasil integration file, etc. — TBD).
+The first exists in a first form since 2026-11-07: Sarina's `desktop-audit`
+command, which `lykanos-tool-menu` runs from a pacman hook. The second is
+direction, not implementation. Both live in the Sarina repo itself, with this
+repo consuming the surface they expose (for the menu, a CLI command run by a
+pacman hook; for maintenance, a CLI command, a systemd timer, a Yggdrasil
+integration file, etc. — TBD).
 
 ## Open questions / not yet decided
 
@@ -245,7 +264,9 @@ command, a systemd timer, a Yggdrasil integration file, etc. — TBD).
 - The installer has never been run on LykanOS (see [INSTALLER.md](INSTALLER.md)).
 - LykanOS's own look: accent, wallpaper, logo and splash exist since
   2026-11-07 (DESKTOP.md, "The look"); no boot menu theme or boot animation yet.
-- Heimdall's rules for each BlackArch tool (it stays off until they exist), and a
-  firewall profile for hostile networks such as a hacker convention.
+- Heimdall's tool rules: built and in force for the 29 tools in its catalog
+  (2026-11-07); Heimdall stays off until they are tested with the tools in a
+  LykanOS VM. Not covered yet: Wi-Fi monitor mode, payload files, C2 servers.
+  And a firewall profile for hostile networks such as a hacker convention.
 - Concrete shape of Sarina's on-system maintenance role (see above) — CLI
   tool, systemd timer, a Yggdrasil integration, or some combination.

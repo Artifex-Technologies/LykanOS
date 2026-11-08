@@ -14,11 +14,11 @@ itself, Yggdrasil's own documentation is the reference: its README (the programs
 
 | Piece | State |
 | --- | --- |
-| Package list | Resolves against Arch, BlackArch and `[labyrinth]` (checked 2026-11-07, when the move was made) |
-| ISO with Yggdrasil | CI could not reach `mkarchiso` until 2026-11-07 (see the README's Status); the first run with the fixes started that day |
+| Package list | Installs in full: the CI build of 2026-11-08 resolved it against Arch, BlackArch and `[labyrinth]` (874 packages with dependencies). One provider choice is not pinned yet (CLAUDE.md, "Pin providers explicitly") |
+| ISO with Yggdrasil | Built by CI since 2026-11-07 (7d2bfe5). The latest is `lykanos-2026.11.08-x86_64.iso` (27f3064), 4.2 GiB; see the README's Status |
 | Live session, login screen, Settings, Agora, installer | **Not booted in a VM yet** (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)) |
 | The desktop packages themselves | Run on Labyrinth OS, which installs the same ones; not yet with LykanOS |
-| Real GPU hardware | Not tried with LykanOS |
+| Real hardware (a GPU, a laptop) | Not tried with LykanOS |
 | Proton VPN, Sarina crash diagnosis, agent manager | Contracts only; see below |
 | Tailscale / Headscale | Optional, not installed |
 
@@ -32,16 +32,28 @@ From `profile/packages.x86_64`:
   `yggdrasil-minos` (the file manager, and through `yggdrasil-portal` every program's open and save dialog),
   `yggdrasil-agora` (the app store), `yggdrasil-lock` (lock screen and the login screen's greeter), `yggdrasil-idle`,
   `yggdrasil-polkit` (the password box), `yggdrasil-keyring-sync`, `yggdrasil-xmove`, `yggdrasil-clipboard`,
-  `yggdrasil-colorpicker`, `yggdrasil-calculator`, `yggdrasil-spell` (with `hunspell-en_us`), `yggdrasil-installer`,
-  `yggdrasil-theme` (GTK and Qt look, the pointer) and `liki-icon-theme`.
+  `yggdrasil-colorpicker`, `yggdrasil-calculator`, `yggdrasil-taskmanager` (the Task Manager, Ctrl + Shift + Esc;
+  2026-11-07), `saga-md` (Saga MD, the Markdown reader: Markdown and text files formatted, or their source to read and
+  edit; 2026-11-08), `yggdrasil-spell` (with `hunspell-en_us`), `yggdrasil-installer`, `yggdrasil-theme` (GTK and Qt
+  look, the pointer) and `liki-icon-theme`.
 - **Terminal:** Ghostty (Super + Return).
 - **Browser:** Firefox.
 - **Saved passwords:** GNOME Keyring (`gnome-keyring`), the same choice Yggdrasil made; I kept it on 2026-11-07.
 - **Wi-Fi, Bluetooth and sound:** Yggdrasil's Settings, over NetworkManager, BlueZ (`bluez`, `bluez-utils`) and PipeWire.
+- **Laptops and graphics** (18206cd, 2026-11-07: my first LykanOS laptop is an Intel one; the same set as Labyrinth OS's
+  base list): `vulkan-intel` and `vulkan-radeon` (Vulkan for Intel and AMD graphics), `intel-media-driver` (Intel
+  video decoding), `alsa-ucm-conf` (the sound mixer setups: with releng's `sof-firmware`, most Intel laptops have no sound
+  without both) and `power-profiles-daemon` (the power modes in Yggdrasil's Settings and battery applet).
 - **Small tools the session uses:** `grim`, `slurp`, `wl-clipboard`, `brightnessctl`, `playerctl`, `libnotify`,
-  `noto-fonts-emoji`, and `btop` (Yggdrasil's Ctrl + Shift + Esc opens it in a terminal).
+  `noto-fonts-emoji`, and `btop` (running programs, in a terminal; Ctrl + Shift + Esc opened it until the Task Manager
+  took that key on 2026-11-07).
 
-Yggdrasil's other programs (the video player, the weather and the store's apps) are not on the image; Agora installs them.
+Saga MD is not made the default program for `.md` and `.txt` files here: Labyrinth's image does that in
+`/etc/xdg/mimeapps.list`, and LykanOS's image has no such file. Which program opens them is not checked yet.
+
+Yggdrasil's other programs (the video player `yggdrasil-player`, the weather `yggdrasil-weather`, the spell-check word
+packs and the store's apps) are not on the image. `[labyrinth]` has them, so pacman installs them; LykanOS's Agora catalog
+does not list them (see "Agora on LykanOS").
 
 ## Login screen
 
@@ -60,7 +72,7 @@ the profile; see CLAUDE.md for why they are not in git.
 
 | Packages | Repository |
 | --- | --- |
-| `yggdrasil-*`, `liki-icon-theme`, `heimdall-git`, `sarina-git`, `labyrinth-keyring` | `[labyrinth]`: Labyrinth OS's signed package repository |
+| `yggdrasil-*`, `saga-md`, `liki-icon-theme`, `heimdall-git`, `sarina-git`, `labyrinth-keyring` (and, not on the image, `argus-git` for Agora and `limbo-git`) | `[labyrinth]`: Labyrinth OS's signed package repository |
 | `hyprland`, `greetd`, `cage`, `ghostty`, `gnome-keyring`, `btop`, `ufw`, `clamav` and the rest | Arch (`core`, `extra`, `multilib`) |
 | the security tools | Arch and `[blackarch]` (build only; see [ARCHITECTURE.md](ARCHITECTURE.md)) |
 
@@ -111,8 +123,8 @@ Labyrinth's catalog lives in Labyrinth's image (`/usr/share/labyrinth`), so on L
 - **Argus** (decided 2026-11-07): the Argus app and the Argus firmware for the Flipper Zero as one entry and one package,
   `argus-git`. The package holds the app (`qFlipper`, also `argus`; shown as Argus) and the firmware built as an update
   bundle, `/usr/share/argus/firmware/argus-firmware.tgz` (in Argus: Install from file), with a `.dfu` for a Flipper in
-  recovery mode. Its recipe is in Labyrinth_OS (`packages/pkgbuilds/argus-git`), like everything else LykanOS installs from
-  `[labyrinth]`; it is not on Labyrinth's ISO and Labyrinth's Agora does not list it.
+  recovery mode. Its recipe is in Labyrinth_OS (`packages/pkgbuilds/argus-git`) and `[labyrinth]` carries it; it is not on
+  Labyrinth's ISO and Labyrinth's Agora does not list it.
 
 ## The tools in the start menu
 
@@ -120,8 +132,10 @@ Most security tools ship no menu entry, so on a plain desktop they are invisible
 after every install, upgrade or removal, and while the ISO is built) has Sarina's `desktop-audit` write an entry for each
 installed command-line tool whose pacman group or description makes it a security tool (`--only-category Security`), in
 `/usr/local/share/applications`. Yggdrasil's start menu lists them in its Security folder and starts them in a terminal, with the
-shell left open after the tool's help. Only entries marked as Sarina's are replaced or removed. Needs the `sarina-git` published
-after 2026-11-07 (the flag); with an older one the hook does nothing. Not checked on a LykanOS image yet.
+shell left open after the tool's help. Only entries marked as Sarina's are replaced or removed. It needs a `sarina-git` with
+the `--only-category` flag (Sarina c90f1ae): the one on the 2026-11-08 ISO (`0.1.0.r244`) has it, and the hook ran during
+that build. With an older one the hook does nothing. Whether the entries show up in the start menu is not checked yet (that
+needs a booted image).
 
 ## The look
 
@@ -154,7 +168,8 @@ system through them. `ufw` and `clamav` come from Arch.
 
 - **How it stays off:** the image has `/etc/heimdall/defaults-off`, so Heimdall's install hook (`heimdall-install.hook`
   -> `heimdall-enable-defaults`, which pacstrap runs while the image is built) switches nothing on. Live session and
-  installed system alike. To switch it on: `sudo heimdall-enable-defaults --force && sudo systemctl start heimdall`.
+  installed system alike. The 2026-11-08 build log shows the hook saying so ("nothing was switched on"). To switch it on:
+  `sudo heimdall-enable-defaults --force && sudo systemctl start heimdall`.
 - **The rules (2026-11-07):** Heimdall's tool rules (Heimdall `docs/TOOL_RULES.md`, `917d6b0`), in force because the image has
   `/etc/heimdall/security-tools`. For the 29 tools in its catalog (the core list here and a few more), a tool's program file is
   checked against its package: a verified tool's normal work is written as info and a scanner's destinations are summarised;
@@ -165,7 +180,18 @@ system through them. `ufw` and `clamav` come from Arch.
 - **Firewall:** `ufw` is installed but off for now: listeners for the security tools need incoming connections.
   `sudo ufw enable` turns it on. The plan: on, with rules for the tools, for places like a hacker convention (DEF CON),
   where the network around the computer is hostile. (Labyrinth OS has it on, with incoming connections blocked.)
-- **Sarina** is part of LykanOS too: once she is ready, she gets access to all the tools (with the rules above).
+- **Sarina** is part of LykanOS too, and gets access to all the tools once ready (with the rules above).
+
+## Limbo
+
+Limbo (`limbo-git`), the sandbox Labyrinth OS ships for running guest programs in virtual machines, is not on the LykanOS
+image and not in LykanOS's Agora catalog. `[labyrinth]` carries it. Not tried on LykanOS.
+
+On a LykanOS host Limbo never gives a guest real hardware: its host policy (Limbo's `internal/hostpolicy`) refuses PCI and
+USB passthrough when `/etc/os-release` has `ID=lykanos`, and the old IDs `niflheim` and `chymaera` as well. That is
+hard-coded, so no config file turns it on. Limbo's own plan for LykanOS (its `docs/ARCHITECTURE.md`, "Shipping with
+LykanOS") still describes the local package repository and an ISO without Heimdall, from before LykanOS took its packages
+from `[labyrinth]`.
 
 ## Known limit: locking the live session
 
@@ -175,11 +201,13 @@ manual lock (Super + L) would strand the live user: there is no password to unlo
 
 ## Not checked yet
 
-All of this waits for the first ISO (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)):
+The ISO is built (2026-11-08); all of this waits for it to be booted (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)):
 
 - The live medium starts to the Yggdrasil session; signing out shows the login screen.
-- Heimdall stays off in the live session and after installing (above).
-- Settings, Agora and Ghostty open; `pacman -Syu` reads both Arch and `[labyrinth]`.
+- Heimdall stays off in the live session and after installing (above; the build log already shows its hook leaving it
+  off).
+- Settings, Agora, Ghostty, the Task Manager and Saga MD open; `pacman -Syu` reads both Arch and `[labyrinth]`.
+- The start menu's Security folder lists the security tools.
 
 ## Sarina in the desktop
 
@@ -189,10 +217,11 @@ so Yggdrasil shows Sarina in the panel and Settings with the talk key Super + S.
 package, and LykanOS does not ship them. So on LykanOS the talk key has no program behind it, and Settings' Assistant
 page hides the controls whose programs are missing (Yggdrasil hides a control whose command is missing). Not fixed yet:
 the plan (2026-11-07) moves those programs into a Sarina package, `Sarina/docs/VOICE_PACKAGE_PLAN.md`, tested with me first.
+It is on hold until I can test Super + S myself, so it is not built.
 
 ## Sarina contracts
 
-None of these exists yet. They are recorded in `CLAUDE.md` as things LykanOS needs from Sarina.
+None of these exists on LykanOS yet. They are recorded in `CLAUDE.md` as things LykanOS needs from Sarina.
 
 ### Crash diagnosis
 
@@ -210,7 +239,7 @@ Yggdrasil, so that panel is not coming. What stands:
   records read together, with headroom) and `fleet-launch` (Sarina's `docs/ECOSYSTEM.md` §1).
 - **Yggdrasil's way to show something in the top bar** is a `bar-item` integration file (Yggdrasil's
   `docs/INTEGRATIONS.md`); Yggdrasil's own `yggdrasil-agent-usage` add-on, which shows Claude's limits, works that way.
-  Sarina showing her usage there would be one more such file. Not built.
+  Sarina's usage shown there would be one more such file. Not built.
 - **The launcher stays proposal-first.** It has no way to add an auto-approve flag, needs a human `y` (or `--yes`),
   refuses a prompt that changed after the proposal, and audits every attempt to `~/.local/state/sarina/agent-launch.jsonl`
   for Heimdall (the prompt stored as a hash and a 60-character preview). It is a CLI command only, **not a tool the

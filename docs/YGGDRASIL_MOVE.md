@@ -5,8 +5,8 @@ Yggdrasil on Hyprland, greetd with Yggdrasil's greeter, and Yggdrasil's installe
 `Artifex-Technologies/Niflheim_OS` the same day, and every Chymaera name inside it became Niflheim. Later that day it was renamed
 again, to LykanOS (`Artifex-Technologies/LykanOS`): Niflheim was hard to spell and say.
 
-LykanOS stays a security and research system: its tools layer (the baked-in core and the BlackArch groups, `docs/ARCHITECTURE.md`)
-is unchanged. Gaming pieces stay Labyrinth's (no Steam, Proton, frame generation).
+LykanOS stays a security and research system: its tools layer (the baked-in core, with BlackArch for the rest,
+`docs/ARCHITECTURE.md`) is unchanged. Gaming pieces stay Labyrinth's (no Steam, Proton, frame generation).
 
 ## Where the desktop comes from
 
@@ -17,7 +17,7 @@ desktop then reach both systems the same day.
 
 ## Steps
 
-Steps 1-5 were done on 2026-11-07; step 6 is open.
+Steps 1-5 were done on 2026-11-07. Step 6 is half done: CI builds the ISO, and the check in a VM is open.
 
 1. [x] **Packages.** Done 2026-11-07 (3193bca). In `profile/packages.x86_64`: remove `plasma-meta`, `sddm`, `dolphin`,
    `konsole`, `kwin` and other KDE pieces, `waybar`, `mako`, `nwg-dock-hyprland`, `kvantum`, `calamares`, the MacTahoe theme;
@@ -46,18 +46,26 @@ Steps 1-5 were done on 2026-11-07; step 6 is open.
    and `THIRD_PARTY_NOTICES.md` describe Yggdrasil, greetd and Yggdrasil's installer instead of KDE, Waybar, the Omarchy
    modes and Calamares.
 6. [ ] **Check.** Build the ISO, boot it in a VM, install, reboot, sign in, open Settings, Agora and a terminal;
-   `pacman -Syu` pulls from both repositories; Heimdall runs, in the live session too. It waits for `[labyrinth]` to carry
-   a `yggdrasil-installer` with `yggdrasil-install-system`: the one published on 2026-11-06 has only the window; Yggdrasil
-   0c54aa0 raised the version, and Labyrinth's daily publish at 05:30 on 2026-11-08 puts it there. Use a UEFI VM: the
-   installer needs UEFI.
+   `pacman -Syu` pulls from both repositories; Heimdall stays off (`/etc/heimdall/defaults-off`, see below), in the live
+   session and after installing. Use a UEFI VM: the installer needs UEFI.
+   - [x] Build. CI has built the ISO since 2026-11-07 (7d2bfe5). The first with the install program is
+     `lykanos-2026.11.08-x86_64.iso` (27f3064, 4.2 GiB): Labyrinth's publish on 2026-11-08 put a `yggdrasil-installer`
+     with `yggdrasil-install-system` (`0.1.0.r471-3`) into `[labyrinth]`; the one published on 2026-11-06 had only the
+     window (Yggdrasil 0c54aa0 raised the version).
+   - [ ] Boot it in a VM, install, reboot and check the rest.
 
-Step 6 needs an ISO build and a VM: it waits until the documentation catch-up (Labyrinth `docs/CATCH_UP_2026-11-07.md`) is
-done, the same hold as Labyrinth's next ISO.
+The documentation catch-up step 6 was held for (Labyrinth `docs/CATCH_UP_2026-11-07.md`, sections C and F) was done on
+2026-11-07.
 
-## After the move (2026-11-07)
+## After the move
 
 - Heimdall is installed but off (`/etc/heimdall/defaults-off`; Heimdall 0fd7c17 taught its install hook to respect it) until
   it has rules for each BlackArch tool. The firewall stays off for now; on later for hostile networks (a hacker convention).
-- LykanOS's look: deep teal (`#437569` accent) with Rosewood (`#65000b`), the maze wolf's head logo and a
-  wallpaper; docs/DESKTOP.md,
-  "The look".
+  The tool rules are in force since 2026-11-07 (`/etc/heimdall/security-tools`, 3decac2); Heimdall stays off until they
+  are tested with the tools in a LykanOS VM.
+- Agora's own LykanOS catalog, with Argus (91a792d), and start-menu entries for the security tools from Sarina's
+  `desktop-audit` (999b9f2), 2026-11-07.
+- Laptop and graphics support (18206cd) and the Task Manager (b81ecc2), 2026-11-07; Saga MD, the Markdown reader
+  (27f3064), 2026-11-08.
+- The name LykanOS (f15f01e, 2026-11-07) and its look: deep teal (`#437569` accent) with Rosewood (`#65000b`), the maze
+  wolf's head logo (9c31580, d0dc393) and a wallpaper; docs/DESKTOP.md, "The look".

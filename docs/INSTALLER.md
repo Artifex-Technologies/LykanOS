@@ -15,9 +15,9 @@ removed.
 | --- | --- |
 | `lykanos-installer.conf` | Written 2026-11-07 |
 | `yggdrasil-install-system` | Tested as Labyrinth's program in QEMU/OVMF VMs (2026-10-23 and 2026-10-25; Yggdrasil's `docs/INSTALLER.md`). **Never run on LykanOS** |
-| `yggdrasil-installer` in `[labyrinth]` | The build published on 2026-11-06 (`0.1.0.r420`) has only the window, not `yggdrasil-install-system`. Yggdrasil 0c54aa0 raised the package's version; Labyrinth's daily publish on 2026-11-08 puts the build with the program into `[labyrinth]` |
+| `yggdrasil-installer` in `[labyrinth]` | Since Labyrinth's publish on 2026-11-08: `0.1.0.r471-3`, whose recipe (Yggdrasil's `packages/pkgbuilds/yggdrasil-installer`) installs `/usr/bin/yggdrasil-install-system`. The 2026-11-08 ISO is the first to carry it; the ISOs of 2026-11-07 have the 2026-11-06 build (`0.1.0.r420`), which has only the window |
 | `lykanos-install-cleanup` | Updated 2026-11-07 (greetd, the Labyrinth key, Heimdall). An earlier version was simulated against a mock target root. **Never run in a real install** |
-| zstd squashfs | Set in `profiledef.sh`. **ISO size and install time not measured** |
+| zstd squashfs | Set in `profiledef.sh`. The 2026-11-08 ISO is 4.2 GiB; there is no xz build to compare it with. **Install time not measured** |
 
 ## Starting it
 
@@ -88,7 +88,8 @@ Install time is dominated by two things, and both are addressed:
    image with no fallback.
 
 **Neither effect has been measured.** The direction is well understood, the magnitude is not, and the ISO size increase
-is a real trade-off. Measure both from a built ISO before relying on this, and revert `airootfs_image_tool_options` to
+is a real trade-off. The ISO with zstd is 4.2 GiB (CI, 2026-11-08); how much smaller an xz build would be, and how much
+time zstd saves during an install, still need an xz build and a timed install. Revert `airootfs_image_tool_options` to
 releng's xz line if the size is not acceptable. The original line is kept in a comment in `profiledef.sh`.
 
 ### What `lykanos-install-cleanup` does, and why each step exists
@@ -122,15 +123,16 @@ nothing is fetched during the install. The copy, the clean-up and the initramfs 
 
 ## Not done
 
-- **Never run on LykanOS.** The first real test (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)) is to boot the built
-  ISO in a UEFI VM, install, reboot and sign in. Things most likely to need a fix: the image path, the keyring step and
-  the clean-up's list of live files.
-- **The `yggdrasil-installer` package.** The ISO needs one from `[labyrinth]` that includes `yggdrasil-install-system`
-  (see Status): an ISO built before Labyrinth's publish on 2026-11-08 has an installer window with no program to run.
+- **Never run on LykanOS.** The first real test (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)) is to boot the
+  2026-11-08 ISO (or a later one) in a UEFI VM, install, reboot and sign in. Things most likely to need a fix: the image
+  path, the keyring step and the clean-up's list of live files.
+- **ISOs from before 2026-11-08.** They carry the `yggdrasil-installer` without `yggdrasil-install-system` (see Status),
+  so their installer window has no program to run. Use the 2026-11-08 ISO or a later one.
 - **BIOS computers.** Only `archinstall` installs there.
 - **Branding.** The name and logo are LykanOS's; the boot menu is GRUB's plain one (no theme yet).
 - **Required disk space.** The program's default, 30 GB. The real installed size has not been measured.
 - **Encryption and keyboard layouts.** GRUB reads the encryption password with a US layout (a known limit of the
-  program; Yggdrasil's `docs/INSTALLER.md`).
+  program; Yggdrasil's `docs/INSTALLER.md`). Since 2026-11-07 the disk page warns about it when the chosen keyboard is
+  not plain US.
 - **Agent-assisted install.** Install-time tool selection is Sarina's job and does not exist yet; see
   [ARCHITECTURE.md](ARCHITECTURE.md).
