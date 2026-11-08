@@ -130,16 +130,18 @@ the glow and the accent (white text reads on it; `ANSI_COLOR` in `/etc/os-releas
 same day, BlackArch's kind of red: a glow in the wallpaper, the wolf's eyes, and a logo tone for light backgrounds (on a dark
 background it is lifted to `#b0122a`, as Rosewood itself is too dark to read there).
 
-The logo is a wolf's head of maze walls, front on: I made the picture with Gemini from my Labyrinth and Niflheim logos
-(2026-11-07), so it carries Labyrinth's line work. It replaced a first version drawn the same day (Labyrinth's arrow turned
-upside down into a wolf's head), which I did not like as much.
+The logo is a wolf's head of maze walls, front on: I made the picture with Gemini from my Labyrinth and Niflheim logos and
+drew more maze walls into it by hand (2026-11-07), so it carries Labyrinth's line work. It replaced a first version drawn the
+same day (Labyrinth's arrow turned upside down into a wolf's head), which I did not like as much.
 
-- `assets/logo/lykanos-original.jpg` is the picture as it came. `scripts/gen-source.py` (Pillow, numpy) turns it into
-  `assets/logo/lykanos-source.png` (greys) and `lykanos-eyes.png` (the inside of each eye, filled from a point in it).
-  `scripts/gen-logo.py` (Pillow, potrace) makes the set: white, mint, green, rosewood, grey and black, as transparent PNGs and
-  traced SVGs (`assets/logo/`, shipped in `/usr/share/lykanos/logo/`), and the duo (mint walls, Rosewood eyes), which is the
-  splash logo `lykanos-splash.png` and the icon `lykanos` (`/usr/share/icons/hicolor/*/apps/`; `LOGO=lykanos` in
-  os-release). A new picture: replace the original and run both again.
+- `assets/logo/lykanos-original.jpg` is the picture as I made it. `scripts/gen-source.py` (Pillow, numpy, potrace,
+  rsvg-convert) centres it on a square, traces it as straight segments and straightens every outline (wobbles under 4 px
+  become one straight edge, corners stay sharp), so walls drawn with a finger come out straight: `assets/logo/
+  lykanos-source.svg` (the outline), `lykanos-source.png` and `lykanos-eyes.png` (the inside of each eye, filled from a point
+  in it). `scripts/gen-logo.py` (Pillow) makes the set: white, mint, green, rosewood, grey and black, as transparent PNGs and
+  SVGs from that outline (`assets/logo/`, shipped in `/usr/share/lykanos/logo/`), and the duo (mint walls, Rosewood eyes),
+  which is the splash logo `lykanos-splash.png` and the icon `lykanos` (`/usr/share/icons/hicolor/*/apps/`;
+  `LOGO=lykanos` in os-release). A new picture: replace the original and run both again.
 - `scripts/gen-wallpaper.py` (Pillow) makes `/usr/share/wallpapers/lykanos/lykanos.png` (2560x1440): the desktop's
   default wallpaper (`lykanos-branding.conf`) and the login screen's (`/etc/yggdrasil/greeter.conf`).
 - Not yet: a boot menu theme and a boot animation (GRUB's plain menu; no Plymouth).

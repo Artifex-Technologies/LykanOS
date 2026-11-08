@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Builds LykanOS's logo set from assets/logo/lykanos-source.png (the maze wolf's head, white lines on black, prepared by
-scripts/gen-source.py from my Gemini picture) and assets/logo/lykanos-eyes.png (the inside of its eyes). Run this again after
+scripts/gen-source.py from my picture), assets/logo/lykanos-source.svg (its straightened outline) and assets/logo/lykanos-eyes.png (the inside of its eyes). Run this again after
 changing the source.
 
     python3 scripts/gen-source.py && python3 scripts/gen-logo.py
@@ -26,6 +26,7 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "assets", "logo", "lykanos-source.png")
 EYES = os.path.join(ROOT, "assets", "logo", "lykanos-eyes.png")
+SRC_SVG = os.path.join(ROOT, "assets", "logo", "lykanos-source.svg")
 OUT = os.path.join(ROOT, "assets", "logo")
 SHIPPED = os.path.join(ROOT, "profile", "airootfs", "usr", "share", "lykanos", "logo")
 ICONS = os.path.join(ROOT, "profile", "airootfs", "usr", "share", "icons", "hicolor")
@@ -48,21 +49,25 @@ def main():
         im = Image.new("RGBA", (1024, 1024), rgb + (0,))
         im.putalpha(alpha)
         im.save(os.path.join(OUT, f"lykanos-{name}.png"), optimize=True)
-    # vector: the shapes traced once, then recoloured
-    if shutil.which("potrace"):
+    # vector: the straightened outline gen-source.py made (sharp corners), recoloured; without it, traced here
+    text = None
+    if os.path.exists(SRC_SVG):
+        text = open(SRC_SVG).read()
+    elif shutil.which("potrace"):
         with tempfile.TemporaryDirectory() as tmp:
             pbm = os.path.join(tmp, "trace.pbm")
             # potrace traces black: the white lines become black on white
             gray.point(lambda v: 0 if v >= 128 else 255).convert("1").save(pbm)
             svg = os.path.join(tmp, "trace.svg")
-            subprocess.run(["potrace", "-s", "-o", svg, "--turdsize", "20", "--alphamax", "0.9", "--opttolerance", "0.4", pbm], check=True)
+            subprocess.run(["potrace", "-s", "-o", svg, "--turdsize", "20", "--alphamax", "0", "--opttolerance", "0.4", pbm], check=True)
             text = open(svg).read()
+    else:
+        print("potrace is not installed: SVGs left as they were", file=sys.stderr)
+    if text:
         for name, rgb in TONES.items():
             colour = "#%02x%02x%02x" % rgb
             with open(os.path.join(OUT, f"lykanos-{name}.svg"), "w") as f:
                 f.write(text.replace('fill="#000000"', f'fill="{colour}"'))
-    else:
-        print("potrace is not installed: SVGs left as they were", file=sys.stderr)
     os.makedirs(SHIPPED, exist_ok=True)
     for name in TONES:
         for ext in ("png", "svg"):
