@@ -194,6 +194,16 @@ pipewire-pulse
 pipewire-jack
 wireplumber
 
+# --- laptops and graphics (the same set as Labyrinth OS's base list; Niflheim's first
+# laptop is an Intel one). Vulkan for Intel and AMD graphics, Intel video decoding,
+# the mixer setups that go with releng's sof-firmware (most Intel laptops have no sound
+# without both), and the power modes in Yggdrasil's Settings and battery applet.
+vulkan-intel
+vulkan-radeon
+intel-media-driver
+alsa-ucm-conf
+power-profiles-daemon
+
 # --- security monitor: Heimdall (Labyrinth's repository; shared with Labyrinth,
 # its alerts in Yggdrasil's panel and Settings), on ufw's log and ClamAV.
 heimdall-git
