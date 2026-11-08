@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Builds LykanOS's logo set from assets/logo/lykanos-source.png (the maze wolf's head, white lines on black, made by
-scripts/gen-source.py from Labyrinth's mark) and assets/logo/lykanos-eyes.png (its eyes alone). Run this again after changing
-the source.
+"""Builds LykanOS's logo set from assets/logo/lykanos-source.png (the maze wolf's head, white lines on black, prepared by
+scripts/gen-source.py from my Gemini picture) and assets/logo/lykanos-eyes.png (the inside of its eyes). Run this again after
+changing the source.
 
     python3 scripts/gen-source.py && python3 scripts/gen-logo.py
 
 Needs Pillow and potrace (for the SVGs). Writes:
     assets/logo/lykanos-{white,mint,green,rosewood,grey,black}.png    1024 px, transparent background, one colour
     assets/logo/lykanos-{white,mint,green,rosewood,grey,black}.svg    traced vector
-    assets/logo/lykanos-duo.png        mint walls with Rosewood eyes (lifted for dark backgrounds): the icon and the splash
+    assets/logo/lykanos-duo.png        mint walls with Rosewood eyes (lifted for dark backgrounds), filled: the icon and the splash
     profile/airootfs/usr/share/lykanos/logo/                 the set as shipped, and lykanos-splash.png (Yggdrasil's splash)
     profile/airootfs/usr/share/icons/hicolor/<size>/apps/lykanos.png   (the duo, for dark UIs; os-release's LOGO)
 Colours (decided 2026-11-07): the deep teal kept from Niflheim (#437569, the accent; mint #9fd1c3 on dark backgrounds) and
@@ -74,8 +74,8 @@ def main():
     duo = Image.new("RGBA", (1024, 1024), TONES["mint"] + (0,))
     duo.putalpha(alpha)
     red = Image.new("RGBA", (1024, 1024), EYE_ON_DARK + (255,))
-    red.putalpha(Image.fromarray(__import__("numpy").minimum(__import__("numpy").array(eyes), __import__("numpy").array(alpha))))
-    duo = Image.alpha_composite(duo, red)
+    red.putalpha(eyes)  # the inside of the eyes, under the walls
+    duo = Image.alpha_composite(red, duo)
     duo.save(os.path.join(OUT, "lykanos-duo.png"), optimize=True)
     shutil.copy(os.path.join(OUT, "lykanos-duo.png"), SHIPPED)
     mint = duo

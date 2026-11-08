@@ -58,6 +58,6 @@ done, the same hold as Labyrinth's next ISO.
 
 - Heimdall is installed but off (`/etc/heimdall/defaults-off`; Heimdall 0fd7c17 taught its install hook to respect it) until
   it has rules for each BlackArch tool. The firewall stays off for now; on later for hostile networks (a hacker convention).
-- LykanOS's look: deep teal (`#437569` accent) with Rosewood (`#65000b`), the maze wolf's head logo (first version) and a
+- LykanOS's look: deep teal (`#437569` accent) with Rosewood (`#65000b`), the maze wolf's head logo and a
   wallpaper; docs/DESKTOP.md,
   "The look".

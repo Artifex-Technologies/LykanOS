@@ -73,7 +73,7 @@ from the profile.
   It is listed last, with `SigLevel = Required`, both for building the ISO and on the installed system, so `pacman -Syu`
   brings desktop updates the same day Labyrinth gets them.
 - **What LykanOS adds:** three integration files Yggdrasil reads (its look, the installer's settings, Heimdall), and its
-  look: deep teal with Rosewood red, Labyrinth's maze turned into a wolf's head as the logo, and a wallpaper
+  look: deep teal with Rosewood red, a wolf's head of maze walls as the logo, and a wallpaper
   (`scripts/gen-source.py`, `scripts/gen-logo.py`, `scripts/gen-wallpaper.py`).
 
 Details, and what is not checked yet, are in [docs/DESKTOP.md](docs/DESKTOP.md).
