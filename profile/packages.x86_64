@@ -164,6 +164,8 @@ yggdrasil-clipboard
 yggdrasil-colorpicker
 yggdrasil-calculator
 yggdrasil-taskmanager
+# Saga MD, the Markdown reader (formatted or source), the default for .md and .txt
+saga-md
 yggdrasil-spell
 hunspell-en_us
 yggdrasil-agora
