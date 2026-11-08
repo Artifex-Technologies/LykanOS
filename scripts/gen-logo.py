@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-"""Builds Niflheim OS's logo set from assets/logo/niflheim-source.png (the snake-and-labyrinth mark: white lines on black, any
-size; scaled to 1024 px first). Draft art from 2026-11-07, to be replaced freely: run this again after changing the source.
+"""Builds LykanOS's logo set from assets/logo/lykanos-source.png (the maze wolf's head, white lines on black, made by
+scripts/gen-source.py from Labyrinth's mark) and assets/logo/lykanos-eyes.png (its eyes alone). Run this again after changing
+the source.
 
-    python3 scripts/gen-logo.py
+    python3 scripts/gen-source.py && python3 scripts/gen-logo.py
 
 Needs Pillow and potrace (for the SVGs). Writes:
-    assets/logo/niflheim-{white,mint,green,grey,black}.png    1024 px, transparent background
-    assets/logo/niflheim-{white,mint,green,grey,black}.svg    traced vector
-    profile/airootfs/usr/share/niflheim/logo/                 the set as shipped, and niflheim-splash.png (Yggdrasil's splash)
-    profile/airootfs/usr/share/icons/hicolor/<size>/apps/niflheimos.png   (mint, for dark UIs; os-release's LOGO)
-Tones: white and mint for dark backgrounds, green (Niflheim's accent, #437569) and black for light ones, grey in between.
-The icon is "niflheimos" with no dash: icon lookup shortens "niflheim-os" to "niflheim", which another theme may hold.
+    assets/logo/lykanos-{white,mint,green,rosewood,grey,black}.png    1024 px, transparent background, one colour
+    assets/logo/lykanos-{white,mint,green,rosewood,grey,black}.svg    traced vector
+    assets/logo/lykanos-duo.png        mint walls with Rosewood eyes (lifted for dark backgrounds): the icon and the splash
+    profile/airootfs/usr/share/lykanos/logo/                 the set as shipped, and lykanos-splash.png (Yggdrasil's splash)
+    profile/airootfs/usr/share/icons/hicolor/<size>/apps/lykanos.png   (the duo, for dark UIs; os-release's LOGO)
+Colours (decided 2026-11-07): the deep teal kept from Niflheim (#437569, the accent; mint #9fd1c3 on dark backgrounds) and
+Rosewood #65000b added, BlackArch's kind of red. Rosewood itself is too dark to read on a dark background, so the eyes on dark
+use it lifted (#b0122a); the rosewood logo tone is for light backgrounds.
 """
 import os
 import shutil
@@ -21,11 +24,13 @@ import tempfile
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "assets", "logo", "niflheim-source.png")
+SRC = os.path.join(ROOT, "assets", "logo", "lykanos-source.png")
+EYES = os.path.join(ROOT, "assets", "logo", "lykanos-eyes.png")
 OUT = os.path.join(ROOT, "assets", "logo")
-SHIPPED = os.path.join(ROOT, "profile", "airootfs", "usr", "share", "niflheim", "logo")
+SHIPPED = os.path.join(ROOT, "profile", "airootfs", "usr", "share", "lykanos", "logo")
 ICONS = os.path.join(ROOT, "profile", "airootfs", "usr", "share", "icons", "hicolor")
-TONES = {"white": (255, 255, 255), "mint": (159, 209, 195), "green": (67, 117, 105), "grey": (142, 142, 147), "black": (0, 0, 0)}
+TONES = {"white": (255, 255, 255), "mint": (159, 209, 195), "green": (67, 117, 105), "rosewood": (101, 0, 11), "grey": (142, 142, 147), "black": (0, 0, 0)}
+EYE_ON_DARK = (176, 18, 42)  # Rosewood #65000b lifted so it reads on a dark background
 
 
 def alpha_of(gray):
@@ -42,7 +47,7 @@ def main():
     for name, rgb in TONES.items():
         im = Image.new("RGBA", (1024, 1024), rgb + (0,))
         im.putalpha(alpha)
-        im.save(os.path.join(OUT, f"niflheim-{name}.png"), optimize=True)
+        im.save(os.path.join(OUT, f"lykanos-{name}.png"), optimize=True)
     # vector: the shapes traced once, then recoloured
     if shutil.which("potrace"):
         with tempfile.TemporaryDirectory() as tmp:
@@ -54,23 +59,32 @@ def main():
             text = open(svg).read()
         for name, rgb in TONES.items():
             colour = "#%02x%02x%02x" % rgb
-            with open(os.path.join(OUT, f"niflheim-{name}.svg"), "w") as f:
+            with open(os.path.join(OUT, f"lykanos-{name}.svg"), "w") as f:
                 f.write(text.replace('fill="#000000"', f'fill="{colour}"'))
     else:
         print("potrace is not installed: SVGs left as they were", file=sys.stderr)
     os.makedirs(SHIPPED, exist_ok=True)
     for name in TONES:
         for ext in ("png", "svg"):
-            p = os.path.join(OUT, f"niflheim-{name}.{ext}")
+            p = os.path.join(OUT, f"lykanos-{name}.{ext}")
             if os.path.exists(p):
                 shutil.copy(p, SHIPPED)
-    mint = Image.open(os.path.join(OUT, "niflheim-mint.png"))
+    # the duo: mint walls, red eyes
+    eyes = Image.open(EYES).convert("L").resize((1024, 1024), Image.LANCZOS)
+    duo = Image.new("RGBA", (1024, 1024), TONES["mint"] + (0,))
+    duo.putalpha(alpha)
+    red = Image.new("RGBA", (1024, 1024), EYE_ON_DARK + (255,))
+    red.putalpha(Image.fromarray(__import__("numpy").minimum(__import__("numpy").array(eyes), __import__("numpy").array(alpha))))
+    duo = Image.alpha_composite(duo, red)
+    duo.save(os.path.join(OUT, "lykanos-duo.png"), optimize=True)
+    shutil.copy(os.path.join(OUT, "lykanos-duo.png"), SHIPPED)
+    mint = duo
     # the splash after signing in, the size Labyrinth's is
-    mint.resize((340, 340), Image.LANCZOS).save(os.path.join(SHIPPED, "niflheim-splash.png"), optimize=True)
+    mint.resize((340, 340), Image.LANCZOS).save(os.path.join(SHIPPED, "lykanos-splash.png"), optimize=True)
     for s in (512, 256, 128, 64, 48, 32):
         d = os.path.join(ICONS, f"{s}x{s}", "apps")
         os.makedirs(d, exist_ok=True)
-        mint.resize((s, s), Image.LANCZOS).save(os.path.join(d, "niflheimos.png"), optimize=True)
+        mint.resize((s, s), Image.LANCZOS).save(os.path.join(d, "lykanos.png"), optimize=True)
     print(f"logo set written to {OUT} and the profile")
 
 

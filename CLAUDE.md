@@ -11,7 +11,7 @@ checking it in a VM, is still open.
 
 ## What this repo is
 
-Niflheim OS is an Arch-based security distribution. This repo contains **no
+LykanOS (named Niflheim OS until 2026-11-07, Chymaera OS before that) is an Arch-based security distribution. This repo contains **no
 application code** — it is an [archiso](https://github.com/archlinux/archiso)
 profile plus the build glue that turns it into a bootable ISO. Nothing is
 built here: the desktop (Yggdrasil), Sarina, Heimdall and `labyrinth-keyring`
@@ -22,7 +22,7 @@ Read `docs/ARCHITECTURE.md` before making design decisions; it records *why*
 the current structure exists (a small baked-in tool core over BlackArch
 category groups, the desktop as packages rather than copies, a graphical
 installer over `archinstall`, etc.). `docs/DESKTOP.md` covers the Yggdrasil
-desktop and what Niflheim adds to it, `docs/INSTALLER.md` the install flow;
+desktop and what LykanOS adds to it, `docs/INSTALLER.md` the install flow;
 both separate what was verified from what was not.
 
 ## Where the build runs
@@ -52,7 +52,7 @@ the profile (see below) and runs `mkarchiso`. Until 2026-11-07 a first,
 non-root step built `sarina-git` into a local `[niflheim]` repo from
 `packages/sarina`, a copy of Sarina that had been removed on 2026-10-08.
 
-`scripts/build.sh` honours `NIFLHEIM_WORK_DIR` and `NIFLHEIM_OUT_DIR` for build
+`scripts/build.sh` honours `LYKANOS_WORK_DIR` and `LYKANOS_OUT_DIR` for build
 hosts where `work/` and `out/` must sit on a different filesystem; CI uses these
 to move the build off the runner's small root disk.
 
@@ -85,7 +85,7 @@ system's (Arch's repos and `[labyrinth]` only). `[labyrinth]` has
 repository above it wins, so it can add packages but never replace the base
 system. Do not vendor recipes for the `yggdrasil-*` packages, `sarina-git`,
 `heimdall-git` or `labyrinth-keyring` into this repo: they come from
-`[labyrinth]`, so updates reach Niflheim and Labyrinth the same day.
+`[labyrinth]`, so updates reach LykanOS and Labyrinth the same day.
 
 **Do not commit symlinks under `profile/airootfs/`; add service links to
 `scripts/build.sh`.** This checkout has `core.symlinks=false`, so a committed
@@ -107,26 +107,26 @@ never start. Add accounts through `airootfs/etc/sysusers.d/` instead.
 **The installer copies the live squashfs; it does not pacstrap, and the live
 image is not an installable root.** Yggdrasil's `yggdrasil-install-system`
 (shared with Labyrinth OS; its code is in the Yggdrasil repo, not here) runs
-`unsquashfs` on `airootfs.sfs` and then Niflheim's clean-up inside the new
-system (`niflheim-installer.conf` names it; details in `docs/INSTALLER.md`).
+`unsquashfs` on `airootfs.sfs` and then LykanOS's clean-up inside the new
+system (`lykanos-installer.conf` names it; details in `docs/INSTALLER.md`).
 Traps, each of which produces an install that "succeeds" and then fails later:
 
 - mkarchiso deletes everything in `/boot` from the image, so the target has no
   kernel, and the image's initramfs preset and `mkinitcpio.conf.d/archiso.conf`
-  are archiso's. `niflheim-install-cleanup` restores both. Do not remove it.
+  are archiso's. `lykanos-install-cleanup` restores both. Do not remove it.
 - That script keeps its own list of live-only files (sudoers, polkit, greetd's
   `live.toml` and its drop-in, the installer launcher and integration file,
   ...). Add any new live-only file to it as well as to `airootfs/`; nothing
   checks the two against each other.
 - The program finds the image at `/run/archiso/bootmnt/<ID>/x86_64/airootfs.sfs`,
-  with `ID` from `/etc/os-release` (`niflheim`), which must equal `install_dir`
+  with `ID` from `/etc/os-release` (`lykanos`), which must equal `install_dir`
   in `profiledef.sh` (not archiso's `arch`). Change one and you must change the
-  other, or set `medium` in `niflheim-installer.conf`.
+  other, or set `medium` in `lykanos-installer.conf`.
 - The program installs on UEFI computers only. The medium also boots BIOS
   (syslinux); there only `archinstall` installs.
 - Changes to the install steps themselves belong in Yggdrasil
-  (`packages/installer`, its `docs/INSTALLER.md`); Niflheim's part is the
-  integration file and the clean-up. Nothing of it has been run on Niflheim
+  (`packages/installer`, its `docs/INSTALLER.md`); LykanOS's part is the
+  integration file and the clean-up. Nothing of it has been run on LykanOS
   yet.
 
 **`profile/` is a fork of archiso's `releng` profile**, kept deliberately close
@@ -206,23 +206,23 @@ churn here costs every future session context.
 If you change something on this list, say so in your commit message using the
 word `CONTRACT:` so the other side can grep for it.
 
-### What Niflheim consumes from Sarina
+### What LykanOS consumes from Sarina
 
 The `sarina-git` package from `[labyrinth]`, built from Labyrinth's recipe
 (`packages/pkgbuilds/sarina-git` in Labyrinth_OS); its packaging contract with
-the Sarina repo is kept there, not here. What Niflheim itself relies on:
+the Sarina repo is kept there, not here. What LykanOS itself relies on:
 
 - the package name `sarina-git` in `profile/packages.x86_64`, and the entry
   points `sarina`, `sarina-gui` and `sarina-service` on `PATH`;
-- the `sarina` account name, reserved in `niflheim-installer.conf`
+- the `sarina` account name, reserved in `lykanos-installer.conf`
   (`reserved_logins`) so the installer never offers it;
-- Heimdall's `contained` file and release command (`niflheim-security.conf`),
+- Heimdall's `contained` file and release command (`lykanos-security.conf`),
   which act on Sarina.
 
 The package also installs a Yggdrasil `assistant` integration
 (`/usr/share/yggdrasil/integrations/sarina.conf`) whose programs
 (`/usr/local/bin/labyrinth-sarina-*`) are part of Labyrinth's image, not of the
-package, so on Niflheim they are missing (`docs/DESKTOP.md`, "Sarina in the
+package, so on LykanOS they are missing (`docs/DESKTOP.md`, "Sarina in the
 desktop").
 
 **Licensing.** The package is MPL-2.0 (its `LICENSE` and `license` field).
@@ -231,7 +231,7 @@ Sarina's git history still contains code from before its clean-room rewrite
 package, not the history, but this is not legal advice: confirm with the owner
 before a publicly distributed ISO.
 
-### What Niflheim needs Sarina to provide (not built yet)
+### What LykanOS needs Sarina to provide (not built yet)
 
 The ISO deliberately ships a small tool core and defers the rest. These are
 the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
@@ -265,8 +265,8 @@ the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
    icon theme is Liki (`liki-icon-theme`), so generated entries should reference
    icon names it provides, or they will show a generic fallback.
 
-   **Wired 2026-11-07:** `/usr/local/bin/niflheim-tool-menu`, run by
-   `etc/pacman.d/hooks/90-niflheim-tool-menu.hook` after every pacman transaction
+   **Wired 2026-11-07:** `/usr/local/bin/lykanos-tool-menu`, run by
+   `etc/pacman.d/hooks/90-lykanos-tool-menu.hook` after every pacman transaction
    (and while the ISO is built), runs `sarina desktop-audit --apply
    --only-category Security --target-dir /usr/local/share/applications` (the flag
    is Sarina c90f1ae). Yggdrasil's start menu has a Security folder and opens
@@ -300,6 +300,6 @@ the capabilities that gap depends on — see `docs/ARCHITECTURE.md`:
 
 ### New Sarina versions
 
-A new Sarina reaches Niflheim when Labyrinth's publish puts a new `sarina-git`
+A new Sarina reaches LykanOS when Labyrinth's publish puts a new `sarina-git`
 into `[labyrinth]`: the next ISO build and `pacman -Syu` pick it up. Nothing in
 this repo changes for it.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the Niflheim OS ISO. Must run on Arch Linux (bare metal, VM, or
+# Builds the LykanOS ISO. Must run on Arch Linux (bare metal, VM, or
 # an archlinux Docker container) as root or via sudo — mkarchiso requires it.
 #
 # What this does, in order:
@@ -15,9 +15,9 @@
 # repository (until then sarina-git was built from a copy of Sarina kept in
 # packages/sarina, removed on 2026-10-08).
 #
-# Output: out/*.iso (or $NIFLHEIM_OUT_DIR/*.iso)
+# Output: out/*.iso (or $LYKANOS_OUT_DIR/*.iso)
 #
-# Env: NIFLHEIM_WORK_DIR, NIFLHEIM_OUT_DIR override the default work/ and out/
+# Env: LYKANOS_WORK_DIR, LYKANOS_OUT_DIR override the default work/ and out/
 # locations, for build hosts where those need to sit on a different filesystem.
 
 set -euo pipefail
@@ -26,8 +26,8 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Overridable because a full BlackArch + desktop pacstrap needs far more room
 # than a GitHub runner's root disk has (~14 GB). CI points these at the
 # runner's larger scratch disk — see .github/workflows/build-iso.yml.
-work_dir="${NIFLHEIM_WORK_DIR:-$repo_root/work}"
-out_dir="${NIFLHEIM_OUT_DIR:-$repo_root/out}"
+work_dir="${LYKANOS_WORK_DIR:-$repo_root/work}"
+out_dir="${LYKANOS_OUT_DIR:-$repo_root/out}"
 profile_build_dir="$work_dir/profile"
 
 if [[ $EUID -ne 0 ]]; then

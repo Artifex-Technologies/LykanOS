@@ -27,14 +27,14 @@ jobs:
       - name: Stage build directories on the scratch disk
         run: |
           echo "=== disk before ==="; df -h
-          rm -rf /mnt/niflheim
-          mkdir -p /mnt/niflheim/work /mnt/niflheim/out /mnt/niflheim/pkgcache
+          rm -rf /mnt/lykanos
+          mkdir -p /mnt/lykanos/work /mnt/lykanos/out /mnt/lykanos/pkgcache
           # mkarchiso runs `pacstrap -c`, which downloads into the *host* cache
           # rather than the target — tens of GB for this package set, so that
           # has to move off / as well.
           rm -rf /var/cache/pacman/pkg
           mkdir -p /var/cache/pacman
-          ln -sfn /mnt/niflheim/pkgcache /var/cache/pacman/pkg
+          ln -sfn /mnt/lykanos/pkgcache /var/cache/pacman/pkg
 
       # actions/checkout needs git already present in the job container,
       # and archlinux:latest has nothing preinstalled. -Syu rather than -Sy:
@@ -57,8 +57,8 @@ jobs:
       # the log always shows which filesystem ran out.
       - name: Build ISO (as root; mkarchiso requires it)
         env:
-          NIFLHEIM_WORK_DIR: /mnt/niflheim/work
-          NIFLHEIM_OUT_DIR: /mnt/niflheim/out
+          LYKANOS_WORK_DIR: /mnt/lykanos/work
+          LYKANOS_OUT_DIR: /mnt/lykanos/out
         run: |
           ( while sleep 30; do
               echo "[disk] / $(df -h --output=avail / | tail -1 | tr -d ' ') free | /mnt $(df -h --output=avail /mnt | tail -1 | tr -d ' ') free"
@@ -71,11 +71,11 @@ jobs:
         if: always()
         run: |
           echo "=== disk after ==="; df -h
-          du -sh /mnt/niflheim/* 2>/dev/null || true
+          du -sh /mnt/lykanos/* 2>/dev/null || true
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: niflheim-iso
-          path: /mnt/niflheim/out/*.iso
+          name: lykanos-iso
+          path: /mnt/lykanos/out/*.iso
           if-no-files-found: error

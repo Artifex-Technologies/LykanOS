@@ -1,6 +1,8 @@
-# Niflheim OS
+<p align="center"><img src="assets/logo/lykanos-duo.png" width="180" alt="LykanOS logo: a wolf's head made of a maze"></p>
 
-Niflheim OS (formerly Chymaera OS; renamed 2026-11-07) is an Arch-based distribution built for security research and
+# LykanOS
+
+LykanOS (named Chymaera OS, then Niflheim OS, until 2026-11-07; sometimes searched as Lycan OS) is an Arch-based distribution built for security research and
 penetration testing, combining:
 
 - **[Arch Linux](https://archlinux.org/)** as the rolling-release base
@@ -11,7 +13,7 @@ penetration testing, combining:
   desktop: a desktop environment written in Rust, on Hyprland, with its own top
   bar, dock, Settings, file manager, app store, lock and login screens and
   installer. It is the desktop of [Labyrinth OS](https://github.com/Artifex-Technologies/Labyrinth_OS),
-  and Niflheim installs the same packages. See [The desktop](#the-desktop)
+  and LykanOS installs the same packages. See [The desktop](#the-desktop)
 - **[Heimdall](https://github.com/Artifex-Technologies/Heimdall)**, the security
   monitor Labyrinth OS uses too: installed, but off until it has rules for
   each BlackArch tool
@@ -29,7 +31,7 @@ do not do.
 Kali does a lot right: curated tool menus, consistent documentation, a
 predictable release/support cadence. But Kali isn't developed in the open on
 GitHub, and BlackArch (which *is* on GitHub) ships its full tool catalog by
-default, which can make the base system less stable for daily use. Niflheim
+default, which can make the base system less stable for daily use. LykanOS
 aims to sit between them: an openly developed, Arch-based system with a
 deliberately small default tool set, a polished desktop (Yggdrasil on
 Hyprland), and an AI agent built in to help with recon, scripting, analysis, and general system
@@ -56,7 +58,7 @@ being built.
 
 ## The desktop
 
-I decided on 2026-11-07 that Niflheim uses the same desktop as Labyrinth OS: Yggdrasil on Hyprland. Until 2026-11-07 the
+I decided on 2026-11-07 that LykanOS uses the same desktop as Labyrinth OS: Yggdrasil on Hyprland. Until 2026-11-07 the
 desktop was KDE Plasma with SDDM, the MacTahoe theme and an Omarchy-style Hyprland session beside it; all of that is gone
 from the profile.
 
@@ -70,14 +72,15 @@ from the profile.
   Labyrinth OS's signed package repository (`[labyrinth]`, the GitHub release `packages` of Labyrinth_OS), built for any 64-bit x86 CPU.
   It is listed last, with `SigLevel = Required`, both for building the ISO and on the installed system, so `pacman -Syu`
   brings desktop updates the same day Labyrinth gets them.
-- **What Niflheim adds:** three integration files Yggdrasil reads (its look, the installer's settings, Heimdall), and its
-  deep-teal look: the snake-and-labyrinth logo and a wallpaper (`scripts/gen-logo.py`, `scripts/gen-wallpaper.py`).
+- **What LykanOS adds:** three integration files Yggdrasil reads (its look, the installer's settings, Heimdall), and its
+  look: deep teal with Rosewood red, Labyrinth's maze turned into a wolf's head as the logo, and a wallpaper
+  (`scripts/gen-source.py`, `scripts/gen-logo.py`, `scripts/gen-wallpaper.py`).
 
 Details, and what is not checked yet, are in [docs/DESKTOP.md](docs/DESKTOP.md).
 
 ## Installing
 
-The live session has an **Install Niflheim** launcher (start menu, and the live user's Desktop folder). It opens
+The live session has an **Install LykanOS** launcher (start menu, and the live user's Desktop folder). It opens
 Yggdrasil's installer window, whose install program (`yggdrasil-install-system`) is shared with Labyrinth OS: language,
 keyboard, time zone, disk (optionally encrypted), account. It copies the live system to the disk, so it needs no network.
 It needs a UEFI computer; the medium itself also starts on BIOS computers, where `archinstall` (command line, online) is
@@ -86,13 +89,13 @@ the way to install. See [docs/INSTALLER.md](docs/INSTALLER.md).
 ## Repository layout
 
 ```
-Niflheim_OS/
+LykanOS/
 ├── profile/                  # archiso profile used to build the live/install ISO
 │   ├── profiledef.sh         # ISO metadata (name, label, boot modes, etc.)
 │   ├── packages.x86_64       # package list installed into the ISO/target system
 │   ├── pacman.conf           # repos for the build: core/extra/multilib + [blackarch] + [labyrinth]
 │   └── airootfs/             # files overlaid onto the live system's root (greetd, Yggdrasil integration files, the
-│                             #   installed system's pacman.conf, niflheim-install-cleanup, Agora's Niflheim catalog)
+│                             #   installed system's pacman.conf, lykanos-install-cleanup, Agora's LykanOS catalog)
 ├── docs/                     # ARCHITECTURE.md, DESKTOP.md (Yggdrasil), INSTALLER.md, YGGDRASIL_MOVE.md
 ├── scripts/build.sh          # the ISO build
 ├── CLAUDE.md                 # Guidance for AI agents working in this repo
@@ -108,8 +111,8 @@ Building requires an Arch Linux (or Arch container) environment with
 
 ```bash
 sudo pacman -S --needed archiso curl git
-git clone https://github.com/Artifex-Technologies/Niflheim_OS.git
-cd Niflheim_OS
+git clone https://github.com/Artifex-Technologies/LykanOS.git
+cd LykanOS
 
 # Build the ISO as root (mkarchiso requires it)
 sudo bash scripts/build.sh
@@ -121,8 +124,8 @@ locally), makes the systemd service links in a work copy of the profile and runs
 step built `sarina-git` into a local `[niflheim]` repository from `packages/sarina`, a copy of Sarina that had been
 removed on 2026-10-08.
 
-The resulting ISO is written to `out/`. Set `NIFLHEIM_WORK_DIR` and
-`NIFLHEIM_OUT_DIR` to put the build tree and output on a different filesystem
+The resulting ISO is written to `out/`. Set `LYKANOS_WORK_DIR` and
+`LYKANOS_OUT_DIR` to put the build tree and output on a different filesystem
 (CI uses this to reach a larger disk).
 
 ### Building under WSL
@@ -143,7 +146,7 @@ problems started on 2026-11-07. Booting the ISO in a VM, installing and checking
 [docs/YGGDRASIL_MOVE.md](docs/YGGDRASIL_MOVE.md), and it is still open. It waits for `[labyrinth]` to carry a
 `yggdrasil-installer` with the install program (Labyrinth's daily publish on 2026-11-08).
 
-The installer has never been run on Niflheim. The same install program has installed Labyrinth OS in VMs. Install speed
+The installer has never been run on LykanOS. The same install program has installed Labyrinth OS in VMs. Install speed
 and the larger ISO that zstd compression produces have not been measured.
 
 Not yet done: the agent-assisted install flow, tool categorisation, Heimdall's rules for the tools (it is installed but
@@ -152,8 +155,8 @@ off until then), a boot menu theme, and testing on real GPU hardware. Expect rap
 ## Sarina
 
 [Sarina](https://github.com/Artifex-Technologies/Sarina) (formerly
-Niflheim Code Agent) is a local-first agent written in Go, with an optional
-Python helper, runnable against local open models. Niflheim installs it as
+LykanOS Code Agent) is a local-first agent written in Go, with an optional
+Python helper, runnable against local open models. LykanOS installs it as
 `sarina-git` from `[labyrinth]`, the same package Labyrinth OS installs (its
 recipe is Labyrinth's `packages/pkgbuilds/sarina-git`). Sarina's repository
 ships its own Arch packaging (`packaging/arch/`) and a
@@ -177,13 +180,13 @@ Sarina's intended role in the running system, none of which exists yet:
 - **Maintenance** — evaluate `pacman -Syu` and BlackArch updates for what is
   safe to apply automatically versus what needs a human look.
 
-A newer Sarina reaches Niflheim through `pacman -Syu`, like the desktop.
+A newer Sarina reaches LykanOS through `pacman -Syu`, like the desktop.
 
 ## References
 
 - [Yggdrasil](https://github.com/Artifex-Technologies/Yggdrasil) — the desktop
   environment (its README lists the programs and keyboard shortcuts;
-  `docs/INTEGRATIONS.md` and `docs/INSTALLER.md` describe what Niflheim plugs
+  `docs/INTEGRATIONS.md` and `docs/INSTALLER.md` describe what LykanOS plugs
   into).
 - [Labyrinth OS](https://github.com/Artifex-Technologies/Labyrinth_OS) — the
   sister system whose signed package repository (`docs/PACKAGE_REPO.md` there)

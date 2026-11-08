@@ -16,7 +16,7 @@
    on Hyprland, the same desktop as Labyrinth OS, with greetd and Yggdrasil's
    greeter as the login screen. Its packages come from Labyrinth OS's signed
    package repository (`[labyrinth]`, last in both `pacman.conf` files,
-   `SigLevel = Required`), not from copies in this repo; Niflheim adds only
+   `SigLevel = Required`), not from copies in this repo; LykanOS adds only
    integration files (`profile/airootfs/usr/share/yggdrasil/integrations/`).
    NetworkManager, BlueZ and PipeWire sit under it (`profile/packages.x86_64`
    layers these on top of releng's more CLI/live-boot-oriented networking and
@@ -24,8 +24,8 @@
    and what is unverified are in [DESKTOP.md](DESKTOP.md).
 4. **Installer**: Yggdrasil's installer (`yggdrasil-installer`, with its
    install program `yggdrasil-install-system`), shared with Labyrinth OS and
-   configured by `niflheim-installer.conf`; Niflheim's own clean-up is
-   `niflheim-install-cleanup`. A graphical installer suits a live USB better
+   configured by `lykanos-installer.conf`; LykanOS's own clean-up is
+   `lykanos-install-cleanup`. A graphical installer suits a live USB better
    than `archinstall`'s TUI. It installs by copying the live squashfs rather
    than running `pacstrap`, which is what makes it quick and lets it work
    offline. It needs UEFI. How and why, and what is unverified, is in
@@ -46,7 +46,7 @@
 ## Tool delivery: a small baked-in core, then Sarina
 
 Kali ships a curated default set (`kali-linux-default`) rather than every tool
-in its repos, to keep the base system usable. Niflheim originally copied that
+in its repos, to keep the base system usable. LykanOS originally copied that
 shape by baking in fifteen `blackarch-*` category groups. **That approach was
 abandoned**; the ISO now ships a small hand-picked core and defers the rest to
 Sarina at install time.
@@ -138,7 +138,7 @@ The live medium signs a passwordless `live` user in to the Yggdrasil session:
 greetd reads `etc/greetd/live.toml` there (through the drop-in
 `greetd.service.d/live.conf`), which adds an `initial_session` to the normal
 login screen. Everything in this section is live-medium only: the installer
-strips it from the installed system (`niflheim-install-cleanup`, see
+strips it from the installed system (`lykanos-install-cleanup`, see
 [INSTALLER.md](INSTALLER.md)). Getting here took three things that are each easy
 to get wrong:
 
@@ -171,7 +171,7 @@ them were such files.
 one.** The account has no password, so anything that asks for one strands the
 user. That is why the profile also ships `sudoers.d` and a polkit rule granting
 `wheel` unprompted access. Both are live-medium only: the install program
-writes the installed system's own sudoers file, and `niflheim-install-cleanup`
+writes the installed system's own sudoers file, and `lykanos-install-cleanup`
 deletes the live files so none of this reaches it. That script keeps its own
 list of these files, so a new live-only file has to be added there too.
 The screen does not lock by itself (`yggdrasil-idle` only observes unless its
@@ -213,7 +213,7 @@ for the systemd unit, sysusers snippet and env file both install.
 
 Beyond running as a packaged, on-system service (`sarina-service`, from
 `packaging/arch/` upstream), the intent is for Sarina to take an active
-hand in maintaining Niflheim itself over time — not just be an app that
+hand in maintaining LykanOS itself over time — not just be an app that
 happens to ship on it:
 
 - **Tool organization**: raw BlackArch packages tend to drop binaries into
@@ -240,10 +240,10 @@ command, a systemd timer, a Yggdrasil integration file, etc. — TBD).
   Sarina's install-time selection exists and it is clear what the core has to
   cover on its own.
 - Sequencing: the lean ISO assumes Sarina will deliver tools post-install, and
-  that capability does not exist yet. Until it does, Niflheim ships less
+  that capability does not exist yet. Until it does, LykanOS ships less
   tooling than it did as a concept. That is an accepted, temporary cost.
-- The installer has never been run on Niflheim (see [INSTALLER.md](INSTALLER.md)).
-- Niflheim's own look: accent, wallpaper, logo and splash exist since
+- The installer has never been run on LykanOS (see [INSTALLER.md](INSTALLER.md)).
+- LykanOS's own look: accent, wallpaper, logo and splash exist since
   2026-11-07 (DESKTOP.md, "The look"); no boot menu theme or boot animation yet.
 - Heimdall's rules for each BlackArch tool (it stays off until they exist), and a
   firewall profile for hostile networks such as a hacker convention.

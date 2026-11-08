@@ -1,4 +1,4 @@
-# Niflheim OS is a security system: Heimdall applies its tool rules here (Heimdall's docs/TOOL_RULES.md). A verified security
+# LykanOS is a security system: Heimdall applies its tool rules here (Heimdall's docs/TOOL_RULES.md). A verified security
 # tool's normal work (a scanner's thousand new destinations) is written as info and summarised; a tool whose program file is
 # not what its package installed, what Sarina starts, and an offline tool connecting are shown. Heimdall itself is still off
 # (/etc/heimdall/defaults-off) until the rules are tested with the tools.

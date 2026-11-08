@@ -1,7 +1,7 @@
 [Unit]
 Description=Initialize the pacman keyring
 # Runs only when there is no keyring yet: on the live medium (mkarchiso ships none), and as a safety net on an installed system
-# if the installer's own initialisation (niflheim-install-cleanup) did not happen. The Labyrinth key signs the desktop's
+# if the installer's own initialisation (lykanos-install-cleanup) did not happen. The Labyrinth key signs the desktop's
 # packages ([labyrinth] in /etc/pacman.conf).
 ConditionPathExists=!/etc/pacman.d/gnupg/pubring.gpg
 After=systemd-random-seed.service

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Generates Niflheim OS's default wallpaper: deep teal, darker at the edges, a soft lighter field in the middle and a glow low
-on the right, in the colours of the reference picture chosen on 2026-11-07 (#101c1c edges, #24413c middle, #437569 glow).
+"""Generates LykanOS's default wallpaper: deep teal, darker at the edges, a soft lighter field in the middle and a glow low
+on the right, in the colours of the reference picture chosen on 2026-11-07 (#101c1c edges, #24413c middle, #437569 glow),
+and Rosewood (#65000b) glowing up from the lower left.
 Placeholder art for the look; replace it with real artwork freely.
 
     python3 scripts/gen-wallpaper.py [OUT.png] [WIDTH HEIGHT]
@@ -14,11 +15,12 @@ import sys
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "profile", "airootfs", "usr", "share", "wallpapers", "niflheim", "niflheim-green.png")
+out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "profile", "airootfs", "usr", "share", "wallpapers", "lykanos", "lykanos.png")
 w = int(sys.argv[2]) if len(sys.argv) > 2 else 2560
 h = int(sys.argv[3]) if len(sys.argv) > 3 else 1440
 
 EDGE, MIDDLE, GLOW = (16, 28, 28), (36, 65, 60), (67, 117, 105)
+ROSEWOOD = (101, 0, 11)  # #65000b, added 2026-11-07: BlackArch's kind of red beside the teal
 
 
 def layer(colour, shape, blur):
@@ -37,6 +39,9 @@ def main():
     # the glow low on the right
     glow, mask = layer(GLOW, lambda d: d.ellipse([w * 0.70, h * 0.55, w * 1.08, h * 1.15], fill=170), h * 0.14)
     img = Image.composite(glow, img, mask)
+    # Rosewood glowing up from the lower left, the teal's counterpart
+    rose, mask = layer(ROSEWOOD, lambda d: d.ellipse([-w * 0.12, h * 0.50, w * 0.34, h * 1.18], fill=200), h * 0.16)
+    img = Image.composite(rose, img, mask)
     # a darker band down each side, as in the reference
     shade, mask = layer((10, 18, 18), lambda d: (d.rectangle([0, 0, w * 0.05, h], fill=200), d.rectangle([w * 0.95, 0, w, h], fill=200)), w * 0.04)
     img = Image.composite(shade, img, mask)

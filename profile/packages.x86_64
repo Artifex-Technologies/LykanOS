@@ -1,8 +1,8 @@
-# Niflheim OS package list for mkarchiso.
+# LykanOS package list for mkarchiso.
 #
 # Section 1 is archiso's releng base list, unmodified (installer, live-boot,
 # and hardware-support packages: archlinux/archiso configs/releng/packages.x86_64).
-# Sections 2+ are Niflheim additions. Keeping releng's list intact rather than
+# Sections 2+ are LykanOS additions. Keeping releng's list intact rather than
 # trimming it avoids silently dropping live-boot/hardware support we haven't
 # individually verified we can do without.
 
@@ -195,7 +195,7 @@ pipewire-pulse
 pipewire-jack
 wireplumber
 
-# --- laptops and graphics (the same set as Labyrinth OS's base list; Niflheim's first
+# --- laptops and graphics (the same set as Labyrinth OS's base list; LykanOS's first
 # laptop is an Intel one). Vulkan for Intel and AMD graphics, Intel video decoding,
 # the mixer setups that go with releng's sof-firmware (most Intel laptops have no sound
 # without both), and the power modes in Yggdrasil's Settings and battery applet.
@@ -218,12 +218,12 @@ clamav
 wireguard-tools
 
 # --- installer: Yggdrasil's (yggdrasil-installer above, with its
-# yggdrasil-install-system; niflheim-installer.conf names Niflheim's clean-up).
+# yggdrasil-install-system; lykanos-installer.conf names LykanOS's clean-up).
 # archinstall (releng base, above) stays available as a CLI/scripted option.
 # Calamares was removed on 2026-11-07. docs/INSTALLER.md.
 
 # --- security tooling (hand-picked core) ---
-# Niflheim ships a small, offline-usable core rather than baking in the
+# LykanOS ships a small, offline-usable core rather than baking in the
 # blackarch-* category groups. Those groups pulled in several thousand
 # packages, unresolvable lib32-* dependencies, and half a dozen provider
 # menus, and no one had validated the combination (see docs/ARCHITECTURE.md).

@@ -1,4 +1,4 @@
-# Live medium only (niflheim-install-cleanup removes it): the login screen of config.toml, plus the live user signed
+# Live medium only (lykanos-install-cleanup removes it): the login screen of config.toml, plus the live user signed
 # in by itself once per start-up. After signing out, the normal login screen comes (the account has no password).
 [terminal]
 # a console of its own, with nothing printed on it: between a session and the login screen the screen is black, not the

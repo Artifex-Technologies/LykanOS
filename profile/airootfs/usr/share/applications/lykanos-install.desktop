@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Install LykanOS
+GenericName=System Installer
+Comment=Install LykanOS on this computer
+Exec=yggdrasil-installer
+Icon=system-software-install
+Terminal=false
+StartupNotify=true
+StartupWMClass=yggdrasil-installer
+Categories=System;
+X-AppStream-Ignore=true

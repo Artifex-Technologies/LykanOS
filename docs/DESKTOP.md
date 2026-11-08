@@ -1,12 +1,12 @@
 # Desktop: Yggdrasil
 
-Niflheim's desktop is [Yggdrasil](https://github.com/Artifex-Technologies/Yggdrasil), the desktop environment written in
+LykanOS's desktop is [Yggdrasil](https://github.com/Artifex-Technologies/Yggdrasil), the desktop environment written in
 Rust that Labyrinth OS uses, running on Hyprland. I decided on 2026-11-07 to use the same desktop as Labyrinth OS rather
-than keep one of Niflheim's own; the move is recorded in [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md). Until 2026-11-07 the
+than keep one of LykanOS's own; the move is recorded in [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md). Until 2026-11-07 the
 desktop was KDE Plasma (SDDM, the MacTahoe theme, Kvantum) with an Omarchy-style Hyprland session and two Waybar looks
 beside it. Those files are gone from the profile.
 
-This page says what Niflheim takes from Yggdrasil, where the packages come from and what Niflheim adds. For the desktop
+This page says what LykanOS takes from Yggdrasil, where the packages come from and what LykanOS adds. For the desktop
 itself, Yggdrasil's own documentation is the reference: its README (the programs and the keyboard shortcuts),
 `docs/INTEGRATIONS.md` and `docs/INSTALLER.md`.
 
@@ -17,8 +17,8 @@ itself, Yggdrasil's own documentation is the reference: its README (the programs
 | Package list | Resolves against Arch, BlackArch and `[labyrinth]` (checked 2026-11-07, when the move was made) |
 | ISO with Yggdrasil | CI could not reach `mkarchiso` until 2026-11-07 (see the README's Status); the first run with the fixes started that day |
 | Live session, login screen, Settings, Agora, installer | **Not booted in a VM yet** (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)) |
-| The desktop packages themselves | Run on Labyrinth OS, which installs the same ones; not yet with Niflheim |
-| Real GPU hardware | Not tried with Niflheim |
+| The desktop packages themselves | Run on Labyrinth OS, which installs the same ones; not yet with LykanOS |
+| Real GPU hardware | Not tried with LykanOS |
 | Proton VPN, Sarina crash diagnosis, agent manager | Contracts only; see below |
 | Tailscale / Headscale | Optional, not installed |
 
@@ -50,7 +50,7 @@ greetd runs Yggdrasil's greeter inside `cage`, a small compositor, on a console 
 
 On the live medium a drop-in, `etc/systemd/system/greetd.service.d/live.conf`, makes greetd read `etc/greetd/live.toml`
 instead. That file is the same login screen plus an `initial_session`: once per start-up the live user is signed in to
-`yggdrasil-session` without a password. After signing out, the normal login screen comes. `niflheim-install-cleanup`
+`yggdrasil-session` without a password. After signing out, the normal login screen comes. `lykanos-install-cleanup`
 deletes both files, so an installed system starts at the login screen.
 
 `display-manager.service` (pointing at `greetd.service`) is one of the links `scripts/build.sh` makes in the work copy of
@@ -84,57 +84,65 @@ The signing key is `C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`:
   has that full fingerprint and only then signs it locally (`pacman-key --lsign-key`).
 - **On the live medium**, `pacman-init.service` creates pacman's keyring at start-up and puts in the archlinux,
   blackarch and labyrinth keys (from `archlinux-keyring`, `blackarch-keyring` and `labyrinth-keyring`).
-- **On the installed system**, `niflheim-install-cleanup` does the same during the install; `pacman-init.service` stays as
+- **On the installed system**, `lykanos-install-cleanup` does the same during the install; `pacman-init.service` stays as
   a safety net and runs only when there is no keyring.
 
 So `pacman -Syu` brings desktop, Heimdall and Sarina updates the same day Labyrinth gets them.
 
-## What Niflheim adds: integration files
+## What LykanOS adds: integration files
 
-Yggdrasil never names an operating system; it reads integration files (Yggdrasil's `docs/INTEGRATIONS.md`). Niflheim's
+Yggdrasil never names an operating system; it reads integration files (Yggdrasil's `docs/INTEGRATIONS.md`). LykanOS's
 are in `profile/airootfs/usr/share/yggdrasil/integrations/`:
 
 | File | Kind | What it does |
 | --- | --- | --- |
-| `niflheim-branding.conf` | `branding` | The accent colour `#437569`, the wallpaper and the splash logo (see "The look" below). The name and logo come from `/etc/os-release` |
-| `niflheim-installer.conf` | `installer` | Points the installer window at `yggdrasil-install-system` and names Niflheim's clean-up. Live medium only. See [INSTALLER.md](INSTALLER.md) |
-| `niflheim-security.conf` | `security` | Heimdall in the panel and Settings: its alerts, the "contained" state of Sarina and its release, the files Heimdall holds, and Settings > Wi-Fi & Network > Devices and Wi-Fi checks |
-| `niflheim-packages.conf` | `packages` | Agora's own catalog for Niflheim (`/usr/share/niflheim/agora/catalog.json`, edition `niflheim`): what only Niflheim offers, from `[labyrinth]`. See "Agora on Niflheim" below |
+| `lykanos-branding.conf` | `branding` | The accent colour `#437569`, the wallpaper and the splash logo (see "The look" below). The name and logo come from `/etc/os-release` |
+| `lykanos-installer.conf` | `installer` | Points the installer window at `yggdrasil-install-system` and names LykanOS's clean-up. Live medium only. See [INSTALLER.md](INSTALLER.md) |
+| `lykanos-security.conf` | `security` | Heimdall in the panel and Settings: its alerts, the "contained" state of Sarina and its release, the files Heimdall holds, and Settings > Wi-Fi & Network > Devices and Wi-Fi checks |
+| `lykanos-packages.conf` | `packages` | Agora's own catalog for LykanOS (`/usr/share/lykanos/agora/catalog.json`, edition `lykanos`): what only LykanOS offers, from `[labyrinth]`. See "Agora on LykanOS" below |
 
-## Agora on Niflheim
+## Agora on LykanOS
 
 Agora, the app store, lists what the operating system's `packages` integration names, plus repositories the user adds.
-Labyrinth's catalog lives in Labyrinth's image (`/usr/share/labyrinth`), so on Niflheim Agora had no catalog of its own until
-2026-11-07. Niflheim's is `profile/airootfs/usr/share/niflheim/agora/catalog.json`; every entry is marked for the edition
-`niflheim`, so a copy of the file anywhere else lists nothing.
+Labyrinth's catalog lives in Labyrinth's image (`/usr/share/labyrinth`), so on LykanOS Agora had no catalog of its own until
+2026-11-07. LykanOS's is `profile/airootfs/usr/share/lykanos/agora/catalog.json`; every entry is marked for the edition
+`lykanos`, so a copy of the file anywhere else lists nothing.
 
 - **Argus** (decided 2026-11-07): the Argus app and the Argus firmware for the Flipper Zero as one entry and one package,
   `argus-git`. The package holds the app (`qFlipper`, also `argus`; shown as Argus) and the firmware built as an update
   bundle, `/usr/share/argus/firmware/argus-firmware.tgz` (in Argus: Install from file), with a `.dfu` for a Flipper in
-  recovery mode. Its recipe is in Labyrinth_OS (`packages/pkgbuilds/argus-git`), like everything else Niflheim installs from
+  recovery mode. Its recipe is in Labyrinth_OS (`packages/pkgbuilds/argus-git`), like everything else LykanOS installs from
   `[labyrinth]`; it is not on Labyrinth's ISO and Labyrinth's Agora does not list it.
 
 ## The tools in the start menu
 
-Most security tools ship no menu entry, so on a plain desktop they are invisible. `niflheim-tool-menu` (run by a pacman hook
+Most security tools ship no menu entry, so on a plain desktop they are invisible. `lykanos-tool-menu` (run by a pacman hook
 after every install, upgrade or removal, and while the ISO is built) has Sarina's `desktop-audit` write an entry for each
 installed command-line tool whose pacman group or description makes it a security tool (`--only-category Security`), in
 `/usr/local/share/applications`. Yggdrasil's start menu lists them in its Security folder and starts them in a terminal, with the
 shell left open after the tool's help. Only entries marked as Sarina's are replaced or removed. Needs the `sarina-git` published
-after 2026-11-07 (the flag); with an older one the hook does nothing. Not checked on a Niflheim image yet.
+after 2026-11-07 (the flag); with an older one the hook does nothing. Not checked on a LykanOS image yet.
 
 ## The look
 
 Deep teal green, decided 2026-11-07 from a reference picture: `#101c1c` at the edges, `#24413c` in the middle, `#437569`
-the glow and the accent (white text reads on it; `ANSI_COLOR` in `/etc/os-release` too). The logo is a snake wound round a
-labyrinth "A", drawn to echo the Arch logo; a draft, made on 2026-11-07, to replace freely.
+the glow and the accent (white text reads on it; `ANSI_COLOR` in `/etc/os-release` too). Rosewood `#65000b` was added the
+same day, BlackArch's kind of red: a glow in the wallpaper, the wolf's eyes, and a logo tone for light backgrounds (on a dark
+background it is lifted to `#b0122a`, as Rosewood itself is too dark to read there).
 
-- `assets/logo/niflheim-source.png` is the drawing (white lines on black). `scripts/gen-logo.py` (Pillow, potrace) makes
-  the set from it: white, mint, green, grey and black, as transparent PNGs and SVGs (`assets/logo/`, shipped in
-  `/usr/share/niflheim/logo/`), the splash logo `niflheim-splash.png`, and the icon `niflheimos` (mint, in
-  `/usr/share/icons/hicolor/*/apps/`; `LOGO=niflheimos` in os-release). Run it again after changing the drawing.
-- `scripts/gen-wallpaper.py` (Pillow) makes `/usr/share/wallpapers/niflheim/niflheim-green.png` (2560x1440): the desktop's
-  default wallpaper (`niflheim-branding.conf`) and the login screen's (`/etc/yggdrasil/greeter.conf`).
+The logo is Labyrinth OS's maze-arrow turned upside down into a wolf's head (the arrow's tip the muzzle, its wings the cheeks,
+the inner diamond and middle wall the bridge of the nose), with ears, eyes and a nose drawn as maze walls of the same width:
+LykanOS is Labyrinth's sibling. A first version (2026-11-07), to be refined: its shapes are the numbers at the top of
+`scripts/gen-source.py`.
+
+- `scripts/gen-source.py` (Pillow, numpy) draws `assets/logo/lykanos-source.png` (white lines on black) and
+  `lykanos-eyes.png` from `assets/logo/labyrinth-base.png`, Labyrinth's white mark. `scripts/gen-logo.py` (Pillow, potrace)
+  makes the set from it: white, mint, green, rosewood, grey and black, as transparent PNGs and SVGs (`assets/logo/`, shipped
+  in `/usr/share/lykanos/logo/`), and the duo (mint walls, red eyes), which is the splash logo `lykanos-splash.png` and the
+  icon `lykanos` (`/usr/share/icons/hicolor/*/apps/`; `LOGO=lykanos` in os-release). Run both again after changing the
+  drawing.
+- `scripts/gen-wallpaper.py` (Pillow) makes `/usr/share/wallpapers/lykanos/lykanos.png` (2560x1440): the desktop's
+  default wallpaper (`lykanos-branding.conf`) and the login screen's (`/etc/yggdrasil/greeter.conf`).
 - Not yet: a boot menu theme and a boot animation (GRUB's plain menu; no Plymouth).
 
 ## Heimdall and the firewall
@@ -151,12 +159,12 @@ system through them. `ufw` and `clamav` come from Arch.
   checked against its package: a verified tool's normal work is written as info and a scanner's destinations are summarised;
   a changed tool file is a critical alert; what Sarina starts and an offline tool (hashcat, john) connecting are shown. Not
   covered yet: Wi-Fi monitor mode, payload files, C2 servers. Heimdall stays off until these are tested with the tools in a
-  Niflheim VM.
-- **During the install** `niflheim-install-cleanup` enables ClamAV's signature updates (`clamav-freshclam.service`).
+  LykanOS VM.
+- **During the install** `lykanos-install-cleanup` enables ClamAV's signature updates (`clamav-freshclam.service`).
 - **Firewall:** `ufw` is installed but off for now: listeners for the security tools need incoming connections.
   `sudo ufw enable` turns it on. The plan: on, with rules for the tools, for places like a hacker convention (DEF CON),
   where the network around the computer is hostile. (Labyrinth OS has it on, with incoming connections blocked.)
-- **Sarina** is part of Niflheim too: once she is ready, she gets access to all the tools (with the rules above).
+- **Sarina** is part of LykanOS too: once she is ready, she gets access to all the tools (with the rules above).
 
 ## Known limit: locking the live session
 
@@ -177,18 +185,18 @@ All of this waits for the first ISO (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOV
 `sarina-git` from `[labyrinth]` installs an `assistant` integration file, `/usr/share/yggdrasil/integrations/sarina.conf`,
 so Yggdrasil shows Sarina in the panel and Settings with the talk key Super + S. The programs that file names
 (`/usr/local/bin/labyrinth-sarina-ask`, `-speak`, `-warm`, `-setting`) are part of Labyrinth OS's image, not of the
-package, and Niflheim does not ship them. So on Niflheim the talk key has no program behind it, and Settings' Assistant
+package, and LykanOS does not ship them. So on LykanOS the talk key has no program behind it, and Settings' Assistant
 page hides the controls whose programs are missing (Yggdrasil hides a control whose command is missing). Not fixed yet:
 the plan (2026-11-07) moves those programs into a Sarina package, `Sarina/docs/VOICE_PACKAGE_PLAN.md`, tested with me first.
 
 ## Sarina contracts
 
-None of these exists yet. They are recorded in `CLAUDE.md` as things Niflheim needs from Sarina.
+None of these exists yet. They are recorded in `CLAUDE.md` as things LykanOS needs from Sarina.
 
 ### Crash diagnosis
 
 Omarchy's design is the one to copy: a `systemd-coredump` watcher, a notification carrying the PID, binary and signal,
-and a hand-off to the agent with a skill that says how to investigate. In Niflheim the agent is Sarina. The useful
+and a hand-off to the agent with a skill that says how to investigate. In LykanOS the agent is Sarina. The useful
 evidence is the coredump, `journalctl`, the program's own logs and GPU driver state. Sarina should propose fixes, not
 apply them unattended.
 
@@ -224,7 +232,7 @@ NetworkManager and a keyring; both are on the image (GNOME Keyring).
   flagging what changed for the VPN (NetworkManager connection names, kill-switch behaviour). Known past breakage: Arch
   forum reports of connection errors after specific app versions.
 - **Tailscale and Headscale are a different tool, kept as an option.** They build a private mesh between *your own*
-  devices over WireGuard; they do not route traffic out through Proton. Useful for connecting a Niflheim box to a team or
+  devices over WireGuard; they do not route traffic out through Proton. Useful for connecting a LykanOS box to a team or
   a Flipper rig. Both are in Arch `extra`, so there is nothing to package. Tailscale's coordination server is a hosted
   service; Headscale is the self-hosted replacement for it. Neither is installed or enabled; Sarina installs them on
   request.

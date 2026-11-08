@@ -2,12 +2,12 @@
 # shellcheck disable=SC2034
 # Based on archiso's releng profile (archlinux/archiso configs/releng/profiledef.sh).
 
-iso_name="niflheim"
-iso_label="NIFLHEIM_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
-iso_publisher="Niflheim OS <https://github.com/Artifex-Technologies/Niflheim_OS>"
-iso_application="Niflheim OS Live/Install Medium"
+iso_name="lykanos"
+iso_label="LYKANOS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
+iso_publisher="LykanOS <https://github.com/Artifex-Technologies/LykanOS>"
+iso_application="LykanOS Live/Install Medium"
 iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
-install_dir="niflheim"
+install_dir="lykanos"
 buildmodes=('iso')
 bootmodes=('bios.syslinux'
            'uefi.systemd-boot')
@@ -34,10 +34,10 @@ file_permissions=(
   # not owned by root, so this mode is load-bearing, not hygiene.
   ["/etc/sudoers.d/00-live-nopasswd"]="0:0:440"
   # The installer runs this in the target after copying the image
-  # (usr/share/yggdrasil/integrations/niflheim-installer.conf).
-  ["/usr/local/bin/niflheim-install-cleanup"]="0:0:755"
-  # Run by a pacman hook (etc/pacman.d/hooks/90-niflheim-tool-menu.hook), also during the build.
-  ["/usr/local/bin/niflheim-tool-menu"]="0:0:755"
+  # (usr/share/yggdrasil/integrations/lykanos-installer.conf).
+  ["/usr/local/bin/lykanos-install-cleanup"]="0:0:755"
+  # Run by a pacman hook (etc/pacman.d/hooks/90-lykanos-tool-menu.hook), also during the build.
+  ["/usr/local/bin/lykanos-tool-menu"]="0:0:755"
   # Trailing slash matters: mkarchiso only recurses (chown -fhR) when the path
   # ends in one. 1000:1000 is numeric because the live user does not exist at
   # build time -- sysusers.d/live.conf creates it at boot, pinned to uid 1000.

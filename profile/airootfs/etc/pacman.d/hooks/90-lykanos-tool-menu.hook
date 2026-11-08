@@ -1,0 +1,12 @@
+# Menu entries for the security tools, refreshed after every install, upgrade or removal (lykanos-tool-menu).
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Updating the start menu's security tools...
+When = PostTransaction
+Exec = /usr/local/bin/lykanos-tool-menu

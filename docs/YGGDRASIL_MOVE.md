@@ -1,16 +1,17 @@
-# Moving Niflheim OS to Yggdrasil
+# Moving LykanOS to Yggdrasil
 
-Decided 2026-11-07: Niflheim OS (formerly Chymaera OS) leaves KDE, SDDM and Calamares and uses the same desktop as Labyrinth OS:
+Decided 2026-11-07: LykanOS (then Niflheim OS, formerly Chymaera OS) leaves KDE, SDDM and Calamares and uses the same desktop as Labyrinth OS:
 Yggdrasil on Hyprland, greetd with Yggdrasil's greeter, and Yggdrasil's installer. The repo was renamed to
-`Artifex-Technologies/Niflheim_OS` the same day, and every Chymaera name inside it became Niflheim.
+`Artifex-Technologies/Niflheim_OS` the same day, and every Chymaera name inside it became Niflheim. Later that day it was renamed
+again, to LykanOS (`Artifex-Technologies/LykanOS`): Niflheim was hard to spell and say.
 
-Niflheim stays a security and research system: its tools layer (the baked-in core and the BlackArch groups, `docs/ARCHITECTURE.md`)
+LykanOS stays a security and research system: its tools layer (the baked-in core and the BlackArch groups, `docs/ARCHITECTURE.md`)
 is unchanged. Gaming pieces stay Labyrinth's (no Steam, Proton, frame generation).
 
 ## Where the desktop comes from
 
 Not copies: packages. Labyrinth's signed package repository (the GitHub release `packages` of Labyrinth_OS, Labyrinth's
-`docs/PACKAGE_REPO.md`) already builds every Yggdrasil package, Sarina, Heimdall and Limbo. Niflheim adds it to its `pacman.conf` (signed,
+`docs/PACKAGE_REPO.md`) already builds every Yggdrasil package, Sarina, Heimdall and Limbo. LykanOS adds it to its `pacman.conf` (signed,
 `SigLevel = Required`, last) and ships `labyrinth-keyring` so the installed system trusts it from its first boot. Updates to the
 desktop then reach both systems the same day.
 
@@ -28,13 +29,13 @@ Steps 1-5 were done on 2026-11-07; step 6 is open.
    `etc/xdg/kscreenlockerrc`, the KDE files in `home/live/.config` and the Omarchy/Waybar modes (`niflheim-desktop-mode` goes
    too). Add `etc/greetd/config.toml` and `live.toml` (the live user signed in by the greeter, as Labyrinth's),
    `display-manager.service` -> greetd, and Yggdrasil's integration files under `usr/share/yggdrasil/integrations/`:
-   `niflheim-branding.conf` (the accent colour; the name comes from os-release), `niflheim-installer.conf` (kind installer),
-   `niflheim-security.conf` (Heimdall). Also added: the installed system's `etc/pacman.conf` with `[labyrinth]`,
+   `lykanos-branding.conf` (the accent colour; the name comes from os-release), `lykanos-installer.conf` (kind installer),
+   `lykanos-security.conf` (Heimdall). Also added: the installed system's `etc/pacman.conf` with `[labyrinth]`,
    `pacman-init.service` and the installer launchers.
 3. [x] **Installer.** Done 2026-11-07, differently from the first plan: instead of a new `os-installer-system` package,
    Labyrinth's `labyrinth-install-system` moved into Yggdrasil as `yggdrasil-install-system`, shipped in the
    `yggdrasil-installer` package and configured by each OS's integration file (Yggdrasil 0c54aa0, Labyrinth 2b18499).
-   `niflheim-installer.conf` points at it and `niflheim-install-cleanup` keeps Niflheim's own clean-up steps (3193bca).
+   `lykanos-installer.conf` points at it and `lykanos-install-cleanup` keeps LykanOS's own clean-up steps (3193bca).
 4. [x] **Build.** Done 2026-11-07 (3193bca, 7d2bfe5). `scripts/build.sh` adds the Labyrinth key by its full fingerprint
    before `mkarchiso` and makes the systemd service links in the work copy (they had been committed as text files). In
    7d2bfe5 the local `[niflheim]` repo went too: `sarina-git` comes from `[labyrinth]` like the desktop (Labyrinth's recipe
@@ -57,5 +58,6 @@ done, the same hold as Labyrinth's next ISO.
 
 - Heimdall is installed but off (`/etc/heimdall/defaults-off`; Heimdall 0fd7c17 taught its install hook to respect it) until
   it has rules for each BlackArch tool. The firewall stays off for now; on later for hostile networks (a hacker convention).
-- Niflheim's look: deep teal (`#437569` accent), the snake-and-labyrinth logo (draft) and a wallpaper; docs/DESKTOP.md,
+- LykanOS's look: deep teal (`#437569` accent) with Rosewood (`#65000b`), the maze wolf's head logo (first version) and a
+  wallpaper; docs/DESKTOP.md,
   "The look".
