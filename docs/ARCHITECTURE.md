@@ -46,7 +46,7 @@
 6. **AI agent**: [Sarina](https://github.com/Artifex-Technologies/Sarina),
    installed as `sarina-git` from `[labyrinth]`, the same package Labyrinth OS
    installs. Nothing is built in this repo: until 2026-11-07 `sarina-git` was
-   built into a local `[niflheim]` repo from `packages/sarina`, a copy of
+   built into a local package repo from `packages/sarina`, a copy of
    Sarina removed on 2026-10-08.
 
 ## Tool delivery: a small baked-in core, then Sarina

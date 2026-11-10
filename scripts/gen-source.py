@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Prepares LykanOS's mark for scripts/gen-logo.py: a wolf's head of maze walls, white lines on black. I made the first picture
-with Gemini from my Labyrinth and Niflheim logos and then drew more maze walls into it by hand (2026-11-07); it is
+with Gemini from my Labyrinth logo and the first LykanOS logo and then drew more maze walls into it by hand (2026-11-07); it is
 assets/logo/lykanos-original.jpg, kept as it came.
 
     python3 scripts/gen-source.py && python3 scripts/gen-logo.py

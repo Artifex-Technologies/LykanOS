@@ -11,7 +11,7 @@ Needs Pillow and potrace (for the SVGs). Writes:
     assets/logo/lykanos-duo.png        mint walls with Rosewood eyes (lifted for dark backgrounds), filled: the icon and the splash
     profile/airootfs/usr/share/lykanos/logo/                 the set as shipped, and lykanos-splash.png (Yggdrasil's splash)
     profile/airootfs/usr/share/icons/hicolor/<size>/apps/lykanos.png   (the duo, for dark UIs; os-release's LOGO)
-Colours (decided 2026-11-07): the deep teal kept from Niflheim (#437569, the accent; mint #9fd1c3 on dark backgrounds) and
+Colours (decided 2026-11-07): the deep teal kept from the first logo (#437569, the accent; mint #9fd1c3 on dark backgrounds) and
 Rosewood #65000b added, BlackArch's kind of red. Rosewood itself is too dark to read on a dark background, so the eyes on dark
 use it lifted (#b0122a); the rosewood logo tone is for light backgrounds.
 """

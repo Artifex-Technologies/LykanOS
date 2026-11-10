@@ -11,7 +11,7 @@ the ISO (the 2026-11-08 one is the first with the install program); booting it i
 
 ## What this repo is
 
-LykanOS (named Niflheim OS until 2026-11-07, Chymaera OS before that) is an Arch-based security distribution. This repo contains **no
+LykanOS (named Chymaera OS until 2026-11-07) is an Arch-based security distribution. This repo contains **no
 application code** — it is an [archiso](https://github.com/archlinux/archiso)
 profile plus the build glue that turns it into a bootable ISO, and the
 scripts that make its logo and wallpaper (`scripts/gen-*.py`). Nothing is
@@ -50,7 +50,7 @@ the Labyrinth package key by its full fingerprint
 (`C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`: fetched, fingerprint checked, then
 `pacman-key --lsign-key`), makes the systemd service links in a work copy of
 the profile (see below) and runs `mkarchiso`. Until 2026-11-07 a first,
-non-root step built `sarina-git` into a local `[niflheim]` repo from
+non-root step built `sarina-git` into a local package repo from
 `packages/sarina`, a copy of Sarina that had been removed on 2026-10-08.
 
 `scripts/build.sh` honours `LYKANOS_WORK_DIR` and `LYKANOS_OUT_DIR` for build

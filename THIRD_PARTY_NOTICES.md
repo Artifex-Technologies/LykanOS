@@ -8,6 +8,6 @@ fork of archiso's `releng` profile (archiso is GPL-3.0-or-later; this repository
 releng's boot menus with LykanOS's names. The desktop (Yggdrasil), Heimdall and Sarina are installed as packages, each with its own
 licence file.
 
-Until 2026-11-07 parts of the Hyprland session configuration and the `niflheim-desktop-mode` script were adapted from
+Until 2026-11-07 parts of the Hyprland session configuration and the the desktop-mode script script were adapted from
 [Omarchy](https://github.com/omacom/omarchy) (MIT, Copyright (c) David Heinemeier Hansson, tag `v4.0.4`). They were
 removed when the desktop moved to Yggdrasil (commit 3193bca) and remain only in the git history before it.

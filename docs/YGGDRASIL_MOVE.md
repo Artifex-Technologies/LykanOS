@@ -1,9 +1,8 @@
 # Moving LykanOS to Yggdrasil
 
-Decided 2026-11-07: LykanOS (then Niflheim OS, formerly Chymaera OS) leaves KDE, SDDM and Calamares and uses the same desktop as Labyrinth OS:
+Decided 2026-11-07: LykanOS (then Chymaera OS) leaves KDE, SDDM and Calamares and uses the same desktop as Labyrinth OS:
 Yggdrasil on Hyprland, greetd with Yggdrasil's greeter, and Yggdrasil's installer. The repo was renamed to
-`Artifex-Technologies/Niflheim_OS` the same day, and every Chymaera name inside it became Niflheim. Later that day it was renamed
-again, to LykanOS (`Artifex-Technologies/LykanOS`): Niflheim was hard to spell and say.
+`Artifex-Technologies/LykanOS` the same day, and every Chymaera name inside it became LykanOS.
 
 LykanOS stays a security and research system: its tools layer (the baked-in core, with BlackArch for the rest,
 `docs/ARCHITECTURE.md`) is unchanged. Gaming pieces stay Labyrinth's (no Steam, Proton, frame generation).
@@ -26,7 +25,7 @@ Steps 1-5 were done on 2026-11-07. Step 6 is half done: CI builds the ISO, and t
    `-installer`, `-theme`, `liki-icon-theme`, `heimdall-git`, `gnome-keyring` (saved passwords stay on GNOME Keyring, decided
    2026-11-07). Bluetooth (`bluez`), `ufw` and `clamav` came in too.
 2. [x] **Live image (`profile/airootfs`).** Done 2026-11-07 (3193bca). Remove `etc/calamares`, `etc/sddm.conf.d`,
-   `etc/xdg/kscreenlockerrc`, the KDE files in `home/live/.config` and the Omarchy/Waybar modes (`niflheim-desktop-mode` goes
+   `etc/xdg/kscreenlockerrc`, the KDE files in `home/live/.config` and the Omarchy/Waybar modes (the desktop-mode script goes
    too). Add `etc/greetd/config.toml` and `live.toml` (the live user signed in by the greeter, as Labyrinth's),
    `display-manager.service` -> greetd, and Yggdrasil's integration files under `usr/share/yggdrasil/integrations/`:
    `lykanos-branding.conf` (the accent colour; the name comes from os-release), `lykanos-installer.conf` (kind installer),
@@ -38,7 +37,7 @@ Steps 1-5 were done on 2026-11-07. Step 6 is half done: CI builds the ISO, and t
    `lykanos-installer.conf` points at it and `lykanos-install-cleanup` keeps LykanOS's own clean-up steps (3193bca).
 4. [x] **Build.** Done 2026-11-07 (3193bca, 7d2bfe5). `scripts/build.sh` adds the Labyrinth key by its full fingerprint
    before `mkarchiso` and makes the systemd service links in the work copy (they had been committed as text files). In
-   7d2bfe5 the local `[niflheim]` repo went too: `sarina-git` comes from `[labyrinth]` like the desktop (Labyrinth's recipe
+   7d2bfe5 the local package repo went too: `sarina-git` comes from `[labyrinth]` like the desktop (Labyrinth's recipe
    is a superset of the one that was here), so `.gitmodules`, `packages/pkgbuilds/sarina-git`, `build-local-packages.sh` and
    `update-sarina.sh` are gone and nothing is built locally. `build.sh` is executable and CI runs it with `bash`; `btop`
    and the `wireshark` group for the installed account came in the same commit.

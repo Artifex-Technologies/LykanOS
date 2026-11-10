@@ -2,7 +2,7 @@
 
 # LykanOS
 
-LykanOS (named Chymaera OS, then Niflheim OS, until 2026-11-07; sometimes searched as Lycan OS) is an Arch-based distribution built for security research and
+LykanOS (named Chymaera OS until 2026-11-07; sometimes searched as Lycan OS) is an Arch-based distribution built for security research and
 penetration testing, combining:
 
 - **[Arch Linux](https://archlinux.org/)** as the rolling-release base
@@ -132,7 +132,7 @@ sudo bash scripts/build.sh
 Nothing is built locally: every package comes from a repository. `scripts/build.sh` installs BlackArch's key (BlackArch's
 `strap.sh`), trusts the Labyrinth package key (fetched, then checked against its full fingerprint before it is signed
 locally), makes the systemd service links in a work copy of the profile and runs `mkarchiso`. Until 2026-11-07 a first
-step built `sarina-git` into a local `[niflheim]` repository from `packages/sarina`, a copy of Sarina that had been
+step built `sarina-git` into a local package repository from `packages/sarina`, a copy of Sarina that had been
 removed on 2026-10-08.
 
 The resulting ISO is written to `out/`. Set `LYKANOS_WORK_DIR` and

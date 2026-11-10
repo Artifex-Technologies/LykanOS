@@ -76,7 +76,7 @@ the profile; see CLAUDE.md for why they are not in git.
 | `hyprland`, `greetd`, `cage`, `ghostty`, `gnome-keyring`, `btop`, `ufw`, `clamav` and the rest | Arch (`core`, `extra`, `multilib`) |
 | the security tools | Arch and `[blackarch]` (build only; see [ARCHITECTURE.md](ARCHITECTURE.md)) |
 
-Nothing is built in this repository. Until 2026-11-07 `sarina-git` was built into a local `[niflheim]` repository from
+Nothing is built in this repository. Until 2026-11-07 `sarina-git` was built into a local package repository from
 `packages/sarina`, a copy of Sarina that had been removed on 2026-10-08.
 
 `[labyrinth]` is the GitHub release `packages` of `Artifex-Technologies/Labyrinth_OS` (Labyrinth's
@@ -144,7 +144,7 @@ the glow and the accent (white text reads on it; `ANSI_COLOR` in `/etc/os-releas
 same day, BlackArch's kind of red: a glow in the wallpaper, the wolf's eyes, and a logo tone for light backgrounds (on a dark
 background it is lifted to `#b0122a`, as Rosewood itself is too dark to read there).
 
-The logo is a wolf's head of maze walls, front on: I made the picture with Gemini from my Labyrinth and Niflheim logos and
+The logo is a wolf's head of maze walls, front on: I made the picture with Gemini from my Labyrinth logo and the first LykanOS logo and
 drew more maze walls into it by hand (2026-11-07), so it carries Labyrinth's line work. It replaced a first version drawn the
 same day (Labyrinth's arrow turned upside down into a wolf's head), which I did not like as much.
 
@@ -188,7 +188,7 @@ Limbo (`limbo-git`), the sandbox Labyrinth OS ships for running guest programs i
 image and not in LykanOS's Agora catalog. `[labyrinth]` carries it. Not tried on LykanOS.
 
 On a LykanOS host Limbo never gives a guest real hardware: its host policy (Limbo's `internal/hostpolicy`) refuses PCI and
-USB passthrough when `/etc/os-release` has `ID=lykanos`, and the old IDs `niflheim` and `chymaera` as well. That is
+USB passthrough when `/etc/os-release` has `ID=lykanos`, and the old ID `chymaera` as well. That is
 hard-coded, so no config file turns it on. Limbo's own plan for LykanOS (its `docs/ARCHITECTURE.md`, "Shipping with
 LykanOS") still describes the local package repository and an ISO without Heimdall, from before LykanOS took its packages
 from `[labyrinth]`.
