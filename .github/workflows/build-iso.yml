@@ -39,8 +39,12 @@ jobs:
       # actions/checkout needs git already present in the job container,
       # and archlinux:latest has nothing preinstalled. -Syu rather than -Sy:
       # a partial upgrade against a stale image layer can break pacman itself.
+      # pacman and the keyring go first, on their own: upgrading pacman in the same transaction as the rest lost its own package
+      # file mid-install on 2026-11-10 and 2026-11-15 ("could not open file .../pacman-7.1.0...pkg.tar.zst").
       - name: Install git (needed before checkout can run)
-        run: pacman -Syu --noconfirm --needed git
+        run: |
+          pacman -Sy --noconfirm --needed archlinux-keyring pacman
+          pacman -Su --noconfirm --needed git
 
       - name: Checkout
         uses: actions/checkout@v4
