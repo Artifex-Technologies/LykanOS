@@ -219,6 +219,11 @@ clamav
 # switches on the LykanOS-only setting for Sarina's voice input (off by default).
 heimdall-private-mic-git
 
+# --- several internet connections at once (Heimdall's, from [labyrinth]): new
+# connections spread over Wi-Fi, Ethernet and a phone by the kernel's multipath
+# routing. Off until switched on in Settings > Wi-Fi & Network.
+heimdall-multilink-git
+
 # --- VPN ---
 # WireGuard userspace tools, for Proton VPN WireGuard configs and NetworkManager's
 # wg support. The Proton app itself is deliberately not baked in: it needs an

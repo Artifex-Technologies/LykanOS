@@ -72,7 +72,7 @@ the profile; see CLAUDE.md for why they are not in git.
 
 | Packages | Repository |
 | --- | --- |
-| `yggdrasil-*`, `saga-md`, `liki-icon-theme`, `heimdall-git`, `heimdall-private-mic-git`, `sarina-git`, `labyrinth-keyring` (and, not on the image, `argus-git` for Agora and `limbo-git`) | `[labyrinth]`: Labyrinth OS's signed package repository |
+| `yggdrasil-*`, `saga-md`, `liki-icon-theme`, `heimdall-git`, `heimdall-private-mic-git`, `heimdall-multilink-git`, `sarina-git`, `labyrinth-keyring` (and, not on the image, `argus-git` for Agora and `limbo-git`) | `[labyrinth]`: Labyrinth OS's signed package repository |
 | `hyprland`, `greetd`, `cage`, `ghostty`, `gnome-keyring`, `btop`, `ufw`, `clamav` and the rest | Arch (`core`, `extra`, `multilib`) |
 | the security tools | Arch and `[blackarch]` (build only; see [ARCHITECTURE.md](ARCHITECTURE.md)) |
 
@@ -188,6 +188,14 @@ system through them. `ufw` and `clamav` come from Arch.
 is the real microphone without the sounds that can place or date a recording (aircraft overhead, mains hum), and every app
 records it; `heimdall-scrub` does the same for files, and Minos has it on the right-click menu. Off for full bass:
 `heimdall-private-mic off` or Settings > Security > Privacy. Heimdall's `docs/LOCATION_SOUNDS.md` has the details and limits.
+
+## Several internet connections at once
+
+`heimdall-multilink-git` (from `[labyrinth]`, added 2026-11-15) spreads new connections over Wi-Fi, Ethernet and a phone over
+USB. The kernel's own multipath routing does it, with health checks, backup-only links, share limits and data caps. It is
+off until switched on in Settings > Wi-Fi & Network > Several connections at once, and it pauses while a VPN is on. Off,
+stopped or crashed, NetworkManager's normal routing is back. It never changes the firewall. Heimdall's `docs/MULTILINK.md`
+has the details and limits.
 
 LykanOS only: a second switch there, off by default, lets Sarina's voice input record the real microphone (every other app
 stays private). The package's pacman hook (`heimdall-private-mic os-setup`) links its WirePlumber fragment into
