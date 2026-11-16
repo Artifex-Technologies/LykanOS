@@ -7,8 +7,8 @@ desktop was KDE Plasma (SDDM, the MacTahoe theme, Kvantum) with an Omarchy-style
 beside it. Those files are gone from the profile.
 
 This page says what LykanOS takes from Yggdrasil, where the packages come from and what LykanOS adds. For the desktop
-itself, Yggdrasil's own documentation is the reference: its README (the programs and the keyboard shortcuts),
-`docs/INTEGRATIONS.md` and `docs/INSTALLER.md`.
+itself, Yggdrasil's own documentation is the reference: its README (the programs), `docs/SHORTCUTS.md` (the keyboard
+shortcuts), `docs/INTEGRATIONS.md` and `docs/INSTALLER.md`.
 
 ## Status
 

@@ -205,9 +205,9 @@ A newer Sarina reaches LykanOS through `pacman -Syu`, like the desktop.
 ## References
 
 - [Yggdrasil](https://github.com/Artifex-Technologies/Yggdrasil) — the desktop
-  environment (its README lists the programs and keyboard shortcuts;
-  `docs/INTEGRATIONS.md` and `docs/INSTALLER.md` describe what LykanOS plugs
-  into).
+  environment (its README lists the programs, `docs/SHORTCUTS.md` the
+  keyboard shortcuts; `docs/INTEGRATIONS.md` and `docs/INSTALLER.md` describe
+  what LykanOS plugs into).
 - [Labyrinth OS](https://github.com/Artifex-Technologies/Labyrinth_OS) — the
   sister system whose signed package repository (`docs/PACKAGE_REPO.md` there)
   supplies the desktop, Heimdall, Sarina and the Labyrinth key.
