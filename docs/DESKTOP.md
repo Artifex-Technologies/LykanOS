@@ -72,7 +72,7 @@ the profile; see CLAUDE.md for why they are not in git.
 
 | Packages | Repository |
 | --- | --- |
-| `yggdrasil-*`, `saga-md`, `liki-icon-theme`, `heimdall-git`, `sarina-git`, `labyrinth-keyring` (and, not on the image, `argus-git` for Agora and `limbo-git`) | `[labyrinth]`: Labyrinth OS's signed package repository |
+| `yggdrasil-*`, `saga-md`, `liki-icon-theme`, `heimdall-git`, `heimdall-private-mic-git`, `sarina-git`, `labyrinth-keyring` (and, not on the image, `argus-git` for Agora and `limbo-git`) | `[labyrinth]`: Labyrinth OS's signed package repository |
 | `hyprland`, `greetd`, `cage`, `ghostty`, `gnome-keyring`, `btop`, `ufw`, `clamav` and the rest | Arch (`core`, `extra`, `multilib`) |
 | the security tools | Arch and `[blackarch]` (build only; see [ARCHITECTURE.md](ARCHITECTURE.md)) |
 
@@ -181,6 +181,19 @@ system through them. `ufw` and `clamav` come from Arch.
   `sudo ufw enable` turns it on. The plan: on, with rules for the tools, for places like a hacker convention (DEF CON),
   where the network around the computer is hostile. (Labyrinth OS has it on, with incoming connections blocked.)
 - **Sarina** is part of LykanOS too, and gets access to all the tools once ready (with the rules above).
+
+## The private microphone
+
+`heimdall-private-mic-git` (from `[labyrinth]`, added 2026-11-15) is on whether Heimdall runs or not: "Microphone (private)"
+is the real microphone without the sounds that can place or date a recording (aircraft overhead, mains hum), and every app
+records it; `heimdall-scrub` does the same for files, and Minos has it on the right-click menu. Off for full bass:
+`heimdall-private-mic off` or Settings > Security > Privacy. Heimdall's `docs/LOCATION_SOUNDS.md` has the details and limits.
+
+LykanOS only: a second switch there, off by default, lets Sarina's voice input record the real microphone (every other app
+stays private). The package's pacman hook (`heimdall-private-mic os-setup`) links its WirePlumber fragment into
+`/etc/wireplumber/wireplumber.conf.d/` because `/etc/os-release` says `ID=lykanos`; the image is built with that file in
+place and the install copies the image, so the link is there on the installed system too. On Labyrinth OS the setting does
+not exist.
 
 ## Limbo
 

@@ -213,6 +213,12 @@ heimdall-git
 ufw
 clamav
 
+# --- the private microphone (Heimdall's, from [labyrinth]): aircraft tones and mains
+# hum, which can place or date a recording, removed from everything the microphone
+# records; heimdall-scrub for files. On whether Heimdall runs or not. Its pacman hook
+# switches on the LykanOS-only setting for Sarina's voice input (off by default).
+heimdall-private-mic-git
+
 # --- VPN ---
 # WireGuard userspace tools, for Proton VPN WireGuard configs and NetworkManager's
 # wg support. The Proton app itself is deliberately not baked in: it needs an
