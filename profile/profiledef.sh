@@ -38,6 +38,9 @@ file_permissions=(
   ["/usr/local/bin/lykanos-install-cleanup"]="0:0:755"
   # Run by a pacman hook (etc/pacman.d/hooks/90-lykanos-tool-menu.hook), also during the build.
   ["/usr/local/bin/lykanos-tool-menu"]="0:0:755"
+  # etc/bluetooth/main.conf (Privacy = device, docs/DESKTOP.md): the folder as bluez makes it, so pacman finds nothing to
+  # complain about when it installs bluez over it.
+  ["/etc/bluetooth"]="0:0:555"
   # Trailing slash matters: mkarchiso only recurses (chown -fhR) when the path
   # ends in one. 1000:1000 is numeric because the live user does not exist at
   # build time -- sysusers.d/live.conf creates it at boot, pinned to uid 1000.

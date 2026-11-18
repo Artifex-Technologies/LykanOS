@@ -5,7 +5,8 @@ Files in this repository that are adapted from other projects, and their licence
 Nothing in the tree today is adapted from another project's code under terms that need a notice here. `profile/` is a
 fork of archiso's `releng` profile (archiso is GPL-3.0-or-later; this repository is GPL-3.0): `profiledef.sh`,
 `packages.x86_64`, `pacman.conf` and the mkinitcpio files say so in their headers, and `syslinux/` and `efiboot/` are
-releng's boot menus with LykanOS's names. The desktop (Yggdrasil), Heimdall and Sarina are installed as packages, each with its own
+releng's boot menus with LykanOS's names. `profile/airootfs/etc/bluetooth/main.conf` is BlueZ 5.88's own settings file
+(BlueZ is GPL-2.0-or-later) with LykanOS's `Privacy = device` and a comment added; its header says so. The desktop (Yggdrasil), Heimdall and Sarina are installed as packages, each with its own
 licence file.
 
 Until 2026-11-07 parts of the Hyprland session configuration and the the desktop-mode script script were adapted from

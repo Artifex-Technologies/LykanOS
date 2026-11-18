@@ -203,6 +203,25 @@ stays private). The package's pacman hook (`heimdall-private-mic os-setup`) link
 place and the install copies the image, so the link is there on the installed system too. On Labyrinth OS the setting does
 not exist.
 
+## Bluetooth address privacy
+
+Without it, Bluetooth Low Energy announces and connects with the computer's fixed hardware address, which anything nearby can
+record to follow the computer from place to place. With BlueZ's `Privacy = device` the address changes every 15 minutes and
+only paired devices recognise it. Since 2026-11-18 the image ships `/etc/bluetooth/main.conf`: bluez 5.88's own file with that
+line (and a comment) right under `[General]`, everything else unchanged. The install copies the image, so an installed system
+has it too, and Heimdall's hardening check `bluetooth-privacy-off` (when Heimdall is on) finds nothing to report.
+
+- BlueZ reads no drop-in folder, so it has to be main.conf itself. pacman keeps a changed main.conf on updates and puts bluez's
+  newer one beside it as `main.conf.pacnew` (the image has one too, from the build).
+- It applies when `bluetooth.service` starts: at boot. Nothing restarts it.
+- For the fixed address (a device that will not pair otherwise), write `off` in place of `device` and restart
+  `bluetooth.service`. Classic Bluetooth keeps the fixed address while the computer is discoverable or connecting; BlueZ has no
+  private mode for it.
+- Labyrinth OS does the same with a program in its `labyrinth-tools` package (`labyrinth-bluetooth-privacy`, run from the
+  package's scriptlet and a pacman hook), which adds the line to an existing file. LykanOS has no package of its own on the
+  image to run such a program (its `[lykanos]` tools are installed later, and only on the installed system), so the file is
+  part of the profile, like `pacman.conf`.
+
 ## Limbo
 
 Limbo (`limbo-git`), the sandbox Labyrinth OS ships for running guest programs in virtual machines, is not on the LykanOS
