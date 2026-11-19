@@ -1,7 +1,7 @@
 # The LykanOS tools and the `[lykanos]` repository
 
-LykanOS's own security tools for **authorized** testing live in a separate, **private** repository,
-`Artifex-Technologies/LykanOS-Tools`, not in this one and never in Labyrinth OS (Labyrinth's text never mentions
+LykanOS's own security tools for **authorized** testing live in a separate, **private** repository, not in this one and
+never in Labyrinth OS (Labyrinth's text never mentions
 pentest tools). They reach an installed LykanOS system as signed packages through the `[lykanos]` pacman repository.
 
 The first tool is **lykan-webaudit**, an authorized web-application security audit (20 issue classes, live and in source,
@@ -39,10 +39,10 @@ the small tool core).
 
 Once the release exists and carries the tools, adding `lykan-webaudit` to `profile/packages.x86_64` and `[lykanos]` to
 `profile/pacman.conf` would put it on the ISO, the same way a `[labyrinth]` package goes on only once Labyrinth's
-publish carries it (`CLAUDE.md`, "Things that will bite you"). That is a product decision for the maintainer.
+publish carries it (`CLAUDE.md`, "Know-how"). That is a product decision for the maintainer.
 
 ## How a tool gets published
 
 The source repo builds and signs each tool with Labyrinth's key and uploads it to this repo's `packages` release
-(`lykanos-publish-repo`, modelled on Labyrinth's publisher; `LykanOS-Tools/packaging/PACKAGE_REPO.md`). It runs only on
+(`lykanos-publish-repo`, modelled on Labyrinth's publisher, documented in that repository). It runs only on
 the PC that holds the signing key. A newer tool reaches LykanOS through `pacman -Syu`, like the desktop.

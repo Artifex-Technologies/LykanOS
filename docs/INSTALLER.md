@@ -121,18 +121,18 @@ the two lists against each other.
 The installer has no network check, and LykanOS's integration file names no Browsers or optional-software lists, so
 nothing is fetched during the install. The copy, the clean-up and the initramfs rebuild need no network.
 
-## Not done
+## Known limitations
 
-- **Never run on LykanOS.** The first real test (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)) is to boot the
-  2026-11-08 ISO (or a later one) in a UEFI VM, install, reboot and sign in. Things most likely to need a fix: the image
-  path, the keyring step and the clean-up's list of live files.
+- **Never run on LykanOS.** The install program has installed Labyrinth OS in VMs; on LykanOS no ISO has yet been booted,
+  installed, rebooted and signed in to. The parts most likely to need a fix: the image path, the keyring step and the
+  clean-up's list of live files.
 - **ISOs from before 2026-11-08.** They carry the `yggdrasil-installer` without `yggdrasil-install-system` (see Status),
   so their installer window has no program to run. Use the 2026-11-08 ISO or a later one.
 - **BIOS computers.** Only `archinstall` installs there.
-- **Branding.** The name and logo are LykanOS's; the boot menu is GRUB's plain one (no theme yet).
+- **Branding.** The name and logo are LykanOS's; the boot menu is GRUB's plain one (no theme).
 - **Required disk space.** The program's default, 30 GB. The real installed size has not been measured.
 - **Encryption and keyboard layouts.** GRUB reads the encryption password with a US layout (a known limit of the
   program; Yggdrasil's `docs/INSTALLER.md`). Since 2026-11-07 the disk page warns about it when the chosen keyboard is
   not plain US.
-- **Agent-assisted install.** Install-time tool selection is Sarina's job and does not exist yet; see
+- **No agent-assisted install.** Install-time tool selection is Sarina's job and does not exist; see
   [ARCHITECTURE.md](ARCHITECTURE.md).

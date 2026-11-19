@@ -16,8 +16,8 @@ shortcuts), `docs/INTEGRATIONS.md` and `docs/INSTALLER.md`.
 | --- | --- |
 | Package list | Installs in full: the CI build of 2026-11-08 resolved it against Arch, BlackArch and `[labyrinth]` (874 packages with dependencies). One provider choice is not pinned yet (CLAUDE.md, "Pin providers explicitly") |
 | ISO with Yggdrasil | Built by CI since 2026-11-07 (7d2bfe5). The latest is `lykanos-2026.11.08-x86_64.iso` (27f3064), 4.2 GiB; see the README's Status |
-| Live session, login screen, Settings, Agora, installer | **Not booted in a VM yet** (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)) |
-| The desktop packages themselves | Run on Labyrinth OS, which installs the same ones; not yet with LykanOS |
+| Live session, login screen, Settings, Agora, installer | **Not booted in a VM** |
+| The desktop packages themselves | Run on Labyrinth OS, which installs the same ones; not with LykanOS |
 | Real hardware (a GPU, a laptop) | Not tried with LykanOS |
 | Proton VPN, Sarina crash diagnosis, agent manager | Contracts only; see below |
 | Tailscale / Headscale | Optional, not installed |
@@ -158,7 +158,7 @@ same day (Labyrinth's arrow turned upside down into a wolf's head), which I did 
   `LOGO=lykanos` in os-release). A new picture: replace the original and run both again.
 - `scripts/gen-wallpaper.py` (Pillow) makes `/usr/share/wallpapers/lykanos/lykanos.png` (2560x1440): the desktop's
   default wallpaper (`lykanos-branding.conf`) and the login screen's (`/etc/yggdrasil/greeter.conf`).
-- Not yet: a boot menu theme and a boot animation (GRUB's plain menu; no Plymouth).
+- No boot menu theme and no boot animation (GRUB's plain menu; no Plymouth).
 
 ## Heimdall and the firewall
 
@@ -229,9 +229,8 @@ image and not in LykanOS's Agora catalog. `[labyrinth]` carries it. Not tried on
 
 On a LykanOS host Limbo never gives a guest real hardware: its host policy (Limbo's `internal/hostpolicy`) refuses PCI and
 USB passthrough when `/etc/os-release` has `ID=lykanos`, and the old ID `chymaera` as well. That is
-hard-coded, so no config file turns it on. Limbo's own plan for LykanOS (its `docs/ARCHITECTURE.md`, "Shipping with
-LykanOS") still describes the local package repository and an ISO without Heimdall, from before LykanOS took its packages
-from `[labyrinth]`.
+hard-coded, so no config file turns it on. Limbo's `docs/ARCHITECTURE.md`, "Shipping with LykanOS", has the
+measurement of its runtime's size and why it installs the hypervisor at first setup.
 
 ## Known limit: locking the live session
 
@@ -239,15 +238,12 @@ The live account has no password. `yggdrasil-idle` only observes unless `mode = 
 `~/.config/yggdrasil/idle.conf`, and the live account has no such file, so the live session never locks by itself. A
 manual lock (Super + L) would strand the live user: there is no password to unlock with.
 
-## Not checked yet
+## Not checked on a booted image
 
-The ISO is built (2026-11-08); all of this waits for it to be booted (step 6 of [YGGDRASIL_MOVE.md](YGGDRASIL_MOVE.md)):
-
-- The live medium starts to the Yggdrasil session; signing out shows the login screen.
-- Heimdall stays off in the live session and after installing (above; the build log already shows its hook leaving it
-  off).
-- Settings, Agora, Ghostty, the Task Manager and Saga MD open; `pacman -Syu` reads both Arch and `[labyrinth]`.
-- The start menu's Security folder lists the security tools.
+The ISO is built (2026-11-08) but has not been booted, so none of this has been seen on LykanOS: the live medium starting
+to the Yggdrasil session and signing out to the login screen; Heimdall staying off in the live session and after installing
+(the build log already shows its hook leaving it off); Settings, Agora, Ghostty, the Task Manager and Saga MD opening;
+`pacman -Syu` reading both Arch and `[labyrinth]`; the start menu's Security folder listing the security tools.
 
 ## Sarina in the desktop
 
@@ -255,13 +251,12 @@ The ISO is built (2026-11-08); all of this waits for it to be booted (step 6 of 
 so Yggdrasil shows Sarina in the panel and Settings with the talk key Super + S. The programs that file names
 (`/usr/local/bin/labyrinth-sarina-ask`, `-speak`, `-warm`, `-setting`) are part of Labyrinth OS's image, not of the
 package, and LykanOS does not ship them. So on LykanOS the talk key has no program behind it, and Settings' Assistant
-page hides the controls whose programs are missing (Yggdrasil hides a control whose command is missing). Not fixed yet:
-the plan (2026-11-07, Sarina's voice package plan, in my private plans) moves those programs into a Sarina package, tested with me first.
-It is on hold until I can test Super + S myself, so it is not built.
+page hides the controls whose programs are missing (Yggdrasil hides a control whose command is missing). Those programs are
+not in a Sarina package.
 
 ## Sarina contracts
 
-None of these exists on LykanOS yet. They are recorded in `CLAUDE.md` as things LykanOS needs from Sarina.
+None of these exists on LykanOS.
 
 ### Crash diagnosis
 

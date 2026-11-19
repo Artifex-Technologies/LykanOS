@@ -165,15 +165,14 @@ every run stopped before `mkarchiso` (the scripts had no executable bit, and the
 `yggdrasil-installer` published on 2026-11-06, which has only the window. The runs in between (b81ecc2 to d0dc393)
 stopped at `target not found: yggdrasil-taskmanager`, until Labyrinth's publish on 2026-11-08 carried the Task Manager.
 
-Booting the ISO in a VM, installing and checking the result is step 6 of
-[docs/YGGDRASIL_MOVE.md](docs/YGGDRASIL_MOVE.md), and it is still open.
+No ISO has been booted in a VM, installed and checked (step 6 of [docs/YGGDRASIL_MOVE.md](docs/YGGDRASIL_MOVE.md)).
 
 The installer has never been run on LykanOS. The same install program has installed Labyrinth OS in VMs. Install speed
 has not been measured, and there is no xz build to compare the zstd ISO's size with.
 
-Not yet done: the agent-assisted install flow, remapping BlackArch's own menu categories, testing Heimdall's tool rules
-with the tools (Heimdall stays off until then), a boot menu theme, and testing on real hardware (a GPU, a laptop).
-Expect rapid changes.
+Not there: the agent-assisted install flow, remapping BlackArch's own menu categories, Heimdall's tool rules tested with
+the tools (Heimdall is off until then), a boot menu theme, and any run on real hardware (a GPU, a laptop). Expect rapid
+changes.
 
 ## Sarina
 

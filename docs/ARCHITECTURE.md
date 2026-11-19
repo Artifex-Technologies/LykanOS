@@ -111,7 +111,23 @@ since 2026-11-07: `lykanos-tool-menu`, run by a pacman hook, has Sarina's
 ([DESKTOP.md](DESKTOP.md), "The tools in the start menu"); remapping the
 `X-BlackArch-*` categories of entries that tools ship themselves is not done.
 Until selection exists, the core is all the distro ships, and that is a
-deliberate floor rather than a placeholder — see "Open questions".
+deliberate floor rather than a placeholder — see "Known limitations".
+
+The shape of the categorisation problem, measured on the 2026-09-12 ISO (the KDE one):
+
+| | Count |
+| --- | --- |
+| `.desktop` files in the image | 181 |
+| …declaring a standard `Security` category | 2 |
+| Of 15 shipped security tools sampled, ones with any menu entry | 2 |
+
+Two distinct jobs. **Generating** entries: 13 of those 15 tools (metasploit, sqlmap, nmap, radare2, john, hashcat, hydra,
+aircrack-ng, bettercap, nikto, binwalk, ...) ship no `.desktop` file, so on the desktop they are invisible. **Remapping**
+entries: BlackArch packages that do ship one use non-standard `X-BlackArch-*` categories (`burpsuite` declares
+`X-BlackArch-Fuzzer;X-BlackArch-Proxy;X-BlackArch-Scanner;X-BlackArch-Webapp`). Yggdrasil's start menu makes its folders from
+the freedesktop categories (`folder_of` in its `packages/panel/src/apps.rs`), so entries that declare only `X-BlackArch-*`
+categories land in its **Other** folder. Generated entries launch CLI tools in a terminal (Ghostty) and should use icon names
+the image's Liki icon theme provides.
 
 ## Validating additions: `blackarch_compat`
 
@@ -252,21 +268,13 @@ repo consuming the surface they expose (for the menu, a CLI command run by a
 pacman hook; for maintenance, a CLI command, a systemd timer, a Yggdrasil
 integration file, etc. — TBD).
 
-## Open questions / not yet decided
+## Known limitations
 
-- Whether the hand-picked core is the right size and shape. It is a floor,
-  chosen for offline usefulness, not a considered curation — revisit once
-  Sarina's install-time selection exists and it is clear what the core has to
-  cover on its own.
-- Sequencing: the lean ISO assumes Sarina will deliver tools post-install, and
-  that capability does not exist yet. Until it does, LykanOS ships less
-  tooling than it did as a concept. That is an accepted, temporary cost.
+- The hand-picked core is a floor chosen for offline usefulness, not a considered curation, and Sarina's install-time
+  selection does not exist, so LykanOS ships less tooling than it did as a concept.
 - The installer has never been run on LykanOS (see [INSTALLER.md](INSTALLER.md)).
-- LykanOS's own look: accent, wallpaper, logo and splash exist since
-  2026-11-07 (DESKTOP.md, "The look"); no boot menu theme or boot animation yet.
-- Heimdall's tool rules: built and in force for the 29 tools in its catalog
-  (2026-11-07); Heimdall stays off until they are tested with the tools in a
-  LykanOS VM. Not covered yet: Wi-Fi monitor mode, payload files, C2 servers.
-  And a firewall profile for hostile networks such as a hacker convention.
-- Concrete shape of Sarina's on-system maintenance role (see above) — CLI
-  tool, systemd timer, a Yggdrasil integration, or some combination.
+- No boot menu theme or boot animation (the accent, wallpaper, logo and splash exist: DESKTOP.md, "The look").
+- Heimdall is off by default: its tool rules (29 tools, 2026-11-07) have not been tested with the tools in a LykanOS VM.
+  The rules do not cover Wi-Fi monitor mode, payload files or command-and-control servers, and there is no firewall profile
+  for hostile networks such as a hacker convention.
+- Sarina's on-system maintenance role (evaluating `pacman -Syu` and BlackArch updates) has no concrete form yet.
