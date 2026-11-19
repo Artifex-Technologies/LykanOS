@@ -53,7 +53,7 @@ Steps 1-5 were done on 2026-11-07. Step 6 is half done: CI builds the ISO, and t
      window (Yggdrasil 0c54aa0 raised the version).
    - [ ] Boot it in a VM, install, reboot and check the rest.
 
-The documentation catch-up step 6 was held for (Labyrinth `docs/CATCH_UP_2026-11-07.md`, sections C and F) was done on
+The documentation catch-up step 6 was held for (my catch-up list of 2026-11-07, sections C and F, in my private plans) was done on
 2026-11-07.
 
 ## After the move

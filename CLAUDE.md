@@ -5,6 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Push every commit as you make it; don't ask me first. Before pushing, check the diff names no host name, network address, SSID
 or MAC address.
 
+Plans, owner steps and other internal notes go in `docs/plans/` (private and git-ignored; ask the owner), never in the
+public docs.
+
 Since 2026-11-07 the desktop is Yggdrasil on Hyprland, with greetd and Yggdrasil's installer, the same as Labyrinth OS's
 (until then KDE Plasma, SDDM and Calamares). `docs/YGGDRASIL_MOVE.md` records the move. Its step 6 is half done: CI builds
 the ISO (the 2026-11-08 one is the first with the install program); booting it in a VM and installing are still open.

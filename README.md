@@ -2,6 +2,8 @@
 
 # LykanOS
 
+[![Build ISO](https://github.com/Artifex-Technologies/LykanOS/actions/workflows/build-iso.yml/badge.svg)](https://github.com/Artifex-Technologies/LykanOS/actions/workflows/build-iso.yml)
+
 LykanOS (named Chymaera OS until 2026-11-07; sometimes searched as Lycan OS) is an Arch-based distribution built for security research and
 penetration testing, combining:
 
@@ -25,6 +27,11 @@ The goal is Kali-style organization, documentation, and out-of-the-box UX for
 security tooling, on top of Arch's package freshness and BlackArch's tool
 catalog — built and versioned in the open on GitHub, which BlackArch and Kali
 do not do.
+
+**How it is tested.** Every change to the profile, the packages or the build scripts builds the whole ISO from scratch in
+the `Build ISO` workflow (an Arch container, `mkarchiso`, the image kept as a download), so a package that is missing or
+does not install fails there. Booting that image in a VM and installing it are not automated yet; what has and has not been
+checked is written down in [docs/INSTALLER.md](docs/INSTALLER.md).
 
 ## Why another security distro?
 

@@ -256,7 +256,7 @@ so Yggdrasil shows Sarina in the panel and Settings with the talk key Super + S.
 (`/usr/local/bin/labyrinth-sarina-ask`, `-speak`, `-warm`, `-setting`) are part of Labyrinth OS's image, not of the
 package, and LykanOS does not ship them. So on LykanOS the talk key has no program behind it, and Settings' Assistant
 page hides the controls whose programs are missing (Yggdrasil hides a control whose command is missing). Not fixed yet:
-the plan (2026-11-07) moves those programs into a Sarina package, `Sarina/docs/VOICE_PACKAGE_PLAN.md`, tested with me first.
+the plan (2026-11-07, Sarina's voice package plan, in my private plans) moves those programs into a Sarina package, tested with me first.
 It is on hold until I can test Super + S myself, so it is not built.
 
 ## Sarina contracts
