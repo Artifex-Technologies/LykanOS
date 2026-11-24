@@ -10,9 +10,12 @@ on:
       - "scripts/**"
       - ".github/workflows/build-iso.yml"
 
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     container:
       image: archlinux:latest
       options: --privileged
@@ -44,7 +47,9 @@ jobs:
         run: pacman -Syu --noconfirm --needed git
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0, pinned by commit
+        with:
+          persist-credentials: false
 
       # Nothing is built here: every package comes from a repository, the desktop, Sarina and Heimdall from Labyrinth's
       # signed one (scripts/build.sh trusts its key by fingerprint).
@@ -75,7 +80,7 @@ jobs:
           du -sh /mnt/lykanos/* 2>/dev/null || true
 
       - name: Upload ISO artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2, pinned by commit
         with:
           name: lykanos-iso
           path: /mnt/lykanos/out/*.iso
