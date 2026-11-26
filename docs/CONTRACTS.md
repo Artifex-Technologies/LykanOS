@@ -19,7 +19,8 @@ file in the same commit, and is told to the other repository's maintainers.
   `docs/INTEGRATIONS.md`): `lykanos-branding.conf` (the accent colour, the wallpaper), `lykanos-installer.conf` (kind
   installer: `command = /usr/bin/yggdrasil-install-system`, `cleanup = /usr/local/bin/lykanos-install-cleanup`,
   `reserved_logins = heimdall sarina`, the new account's groups), `lykanos-security.conf` (Heimdall's API, lock, release and
-  device commands), `lykanos-packages.conf`.
+  device commands), `lykanos-packages.conf`, `lykanos-report.conf` (kind report: Settings > About > Report a problem e-mails
+  reports to support@artifextech.sh, with the package list).
 - **Who:** Yggdrasil (Settings, the panel, the installer, Agora).
 - **Where:** `profile/airootfs/usr/share/yggdrasil/integrations/`.
 
