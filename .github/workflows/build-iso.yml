@@ -7,6 +7,7 @@ on:
     paths:
       - "profile/**"
       - "packages/**"
+      - "tools/**"
       - "scripts/**"
       - ".github/workflows/build-iso.yml"
 
@@ -51,11 +52,14 @@ jobs:
         with:
           persist-credentials: false
 
-      # Nothing is built here: every package comes from a repository, the desktop, Sarina and Heimdall from Labyrinth's
-      # signed one (scripts/build.sh trusts its key by fingerprint).
+      # No package is built here: every package comes from a repository, the desktop, Sarina and Heimdall from Labyrinth's
+      # signed one (lykanos-build trusts its key by fingerprint). Only LykanOS's own programs are built (tools/, Rust).
       - name: Install remaining build dependencies
         run: |
-          pacman -Syu --noconfirm --needed archiso curl
+          pacman -Syu --noconfirm --needed archiso curl rust
+
+      - name: Build LykanOS's programs
+        run: cd tools && cargo build --release --locked
 
       # The disk watcher matters: when / or /mnt fills, the runner agent is
       # killed outright and GitHub uploads *no* log for the job at all, so the
@@ -71,7 +75,7 @@ jobs:
             done ) &
           watcher=$!
           trap 'kill "$watcher" 2>/dev/null || true' EXIT
-          bash ./scripts/build.sh
+          ./tools/target/release/lykanos-build
 
       - name: Disk usage report
         if: always()

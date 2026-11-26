@@ -2,9 +2,11 @@
 
 ## 1. What this is
 
-LykanOS (named Chymaera OS until 2026-11-07) is an Arch-based security distribution. This repository has **no application
-code**: it is an [archiso](https://github.com/archlinux/archiso) profile (`profile/`) plus the build glue that turns it into a
-bootable ISO (`scripts/build.sh`), and the scripts that make its logo and wallpaper (`scripts/gen-*.py`). The desktop
+LykanOS (named Chymaera OS until 2026-11-07) is an Arch-based security distribution. This repository is an
+[archiso](https://github.com/archlinux/archiso) profile (`profile/`), LykanOS's own programs in Rust (`tools/`: `lykanos-build`
+turns the profile into a bootable ISO, `lykanos-install-cleanup` is the installer's last step in the new system,
+`lykanos-tool-menu` writes the tools' start-menu entries), and the scripts that make its logo and wallpaper
+(`scripts/gen-*.py`). The desktop
 (Yggdrasil on Hyprland, greetd, Yggdrasil's installer), Sarina, Heimdall and `labyrinth-keyring` are packages from Labyrinth
 OS's signed repository `[labyrinth]`; their code lives in those repositories. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 before design decisions; [docs/DESKTOP.md](docs/DESKTOP.md) covers the desktop and what LykanOS adds,
@@ -12,19 +14,22 @@ before design decisions; [docs/DESKTOP.md](docs/DESKTOP.md) covers the desktop a
 
 ## 2. Build and test
 
-One step, as root on an Arch host or container (`mkarchiso` requires both):
+Two steps: LykanOS's programs as yourself, then the ISO as root on an Arch host or container (`mkarchiso` requires both):
 
 ```bash
-sudo bash scripts/build.sh
+(cd tools && cargo build --release --locked)
+sudo tools/target/release/lykanos-build
+cd tools && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test   # the programs' checks
 ```
 
-`scripts/build.sh` installs BlackArch's key (BlackArch's `strap.sh`), trusts the Labyrinth package key by its full
+`lykanos-build` installs BlackArch's key (BlackArch's `strap.sh`), trusts the Labyrinth package key by its full
 fingerprint (`C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`: fetched, fingerprint checked, then `pacman-key --lsign-key`), makes
-the systemd service links in a work copy of the profile and runs `mkarchiso`. `LYKANOS_WORK_DIR` and `LYKANOS_OUT_DIR` move
+the systemd service links in a work copy of the profile, puts the two programs the image carries in its `/usr/local/bin` and
+runs `mkarchiso`. `LYKANOS_WORK_DIR` and `LYKANOS_OUT_DIR` move
 `work/` and `out/` to another filesystem (CI does).
 
-There is no test suite or linter for this repository; static checks matter more than usual. After any edit to the package
-list:
+`tools/` has its tests (the clean-up on a made-up copied image, the work profile's links and programs); the profile has no
+test suite, so static checks matter more than usual. After any edit to the package list:
 
 ```bash
 sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/packages.x86_64 | grep -c '[[:blank:]]$'   # must be 0
@@ -32,12 +37,13 @@ mapfile -t PKGS < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' profile/
 pacman -Sp --print-format '%r/%n' "${PKGS[@]}"   # on a host with [blackarch] and [labyrinth]: exit 0, no provider menu
 ```
 
-CI: `.github/workflows/build-iso.yml` builds the ISO on every push to `main` that touches `profile/`, `scripts/` or the
+CI: `.github/workflows/tools.yml` checks `tools/` (fmt, clippy, tests) on every push that touches it;
+`.github/workflows/build-iso.yml` builds the ISO on every push to `main` that touches `profile/`, `tools/`, `scripts/` or the
 workflow, and by hand; `archlinux:latest` privileged on `ubuntu-latest`, 14 to 21 minutes, the ISO as the artifact
 `lykanos-iso`. The runner's `/` has about 14 GB free, so the job mounts the ~70 GB `/mnt` scratch disk for the work tree,
 pacman cache and output; when a disk fills, the runner dies and GitHub uploads **no log** (a 22-byte zip), which is why
-the build step prints free space every 30 s: keep that watcher. The job checks out this repository only and runs
-`bash ./scripts/build.sh`; keep `scripts/build.sh` at mode `100755` in git and keep CI calling it through `bash`. Watch a
+the build step prints free space every 30 s: keep that watcher. The job checks out this repository only, builds `tools/` and runs
+`tools/target/release/lykanos-build`. Watch a
 push by its full SHA: `gh run list --commit <sha>`; an empty log zip plus steps with `conclusion: None` means the runner died.
 
 ## 3. Rules
@@ -87,22 +93,23 @@ docs/plans/BACKLOG.md and docs/plans/LOG.md (private; ask the owner).
   `[lykanos]`). Last on purpose: a same-named package above wins, so they add packages and never replace the base system.
 - **A `[labyrinth]` package goes into `packages.x86_64` only once Labyrinth's publish carries it**, or pacstrap stops at
   `target not found` and no ISO is built. Check Labyrinth_OS's release `packages` first.
-- **No committed symlinks under `profile/airootfs/`;** add service links to `scripts/build.sh`. This checkout has
+- **No committed symlinks under `profile/airootfs/`;** add service links to `LINKS` in `tools/src/build.rs`. This checkout has
   `core.symlinks=false`, so a committed link becomes a text file and the ISO ships a broken unit.
 - **Never ship `profile/airootfs/etc/passwd`, `shadow`, `group` or `gshadow`.** mkarchiso overlays airootfs without
   re-running `systemd-sysusers`, so they replace the image's accounts (greetd's `greeter` too). Accounts go in
   `airootfs/etc/sysusers.d/`.
 - **The installer copies the live squashfs.** Yggdrasil's `yggdrasil-install-system` runs `unsquashfs` on `airootfs.sfs`,
   then LykanOS's clean-up in the new system. mkarchiso empties `/boot` and leaves archiso's initramfs preset and
-  `mkinitcpio.conf.d/archiso.conf`; `lykanos-install-cleanup` restores both, and keeps its own list of live-only files (add
-  a new live-only file there as well as to `airootfs/`; nothing checks the two against each other). The image is found at
+  `mkinitcpio.conf.d/archiso.conf`; `lykanos-install-cleanup` (`tools/src/cleanup.rs`) restores both for every installed
+  kernel, and keeps its own list of live-only files (`LIVE_ONLY`: add a new live-only file there as well as to `airootfs/`;
+  nothing checks the two against each other). The image is found at
   `/run/archiso/bootmnt/<ID>/x86_64/airootfs.sfs` with `ID` from os-release, which must equal `install_dir` in
   `profiledef.sh` (or set `medium` in `lykanos-installer.conf`). UEFI only; on BIOS only `archinstall` installs. Changes to
   the install steps themselves belong in Yggdrasil (`packages/installer`).
 - **`profile/` is a fork of archiso's `releng` profile**, kept close to upstream: copy missing pieces verbatim from
   `/usr/share/archiso/configs/releng/`; the mkinitcpio configs are exact upstream copies (a wrong hook list builds fine and
   panics at boot).
-- **Start-menu entries** for tools come from `/usr/local/bin/lykanos-tool-menu`, run by
+- **Start-menu entries** for tools come from `/usr/local/bin/lykanos-tool-menu` (`tools/src/bin`), run by
   `etc/pacman.d/hooks/90-lykanos-tool-menu.hook` after every pacman transaction (and while the ISO is built).
 - Sarina's `assistant` integration names programs (`/usr/local/bin/labyrinth-sarina-*`) that are part of Labyrinth OS's image,
   not of the package, so on LykanOS they are missing (docs/DESKTOP.md, "Sarina in the desktop").

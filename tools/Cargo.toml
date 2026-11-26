@@ -1,0 +1,19 @@
+[package]
+name = "lykanos-tools"
+version = "0.1.0"
+edition = "2021"
+description = "LykanOS's own programs: the ISO build, the installer's clean-up in the new system, the security tools' menu entries"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "lykanos_tools"
+path = "src/lib.rs"
+
+[dependencies]
+# geteuid (the build and the clean-up run as root) and nothing else of it
+libc = "0.2"
+
+[profile.release]
+strip = true
+lto = true

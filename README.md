@@ -110,11 +110,13 @@ LykanOS/
 │   ├── pacman.conf           # repos for the build: core/extra/multilib + [blackarch] + [labyrinth]
 │   ├── syslinux/, efiboot/   # releng's boot menus (BIOS and UEFI) with LykanOS's names
 │   └── airootfs/             # files overlaid onto the live system's root (greetd, Yggdrasil integration files, the
-│                             #   installed system's pacman.conf, lykanos-install-cleanup, lykanos-tool-menu and its
-│                             #   pacman hook, Heimdall's switch files, Agora's LykanOS catalog, logo, icon, wallpaper)
+│                             #   installed system's pacman.conf, the tool menu's pacman hook, Heimdall's switch
+│                             #   files, Agora's LykanOS catalog, logo, icon, wallpaper)
 ├── assets/logo/              # the logo: my picture (lykanos-original.jpg), its straightened outline and the colour set
 ├── docs/                     # ARCHITECTURE.md, DESKTOP.md (Yggdrasil), INSTALLER.md, YGGDRASIL_MOVE.md
-├── scripts/                  # build.sh (the ISO build); gen-source.py, gen-logo.py, gen-wallpaper.py (the look)
+├── tools/                    # LykanOS's own programs, in Rust: lykanos-build (the ISO), lykanos-install-cleanup (the
+│                             #   installer's last step in the new system), lykanos-tool-menu (the tools' menu entries)
+├── scripts/                  # gen-source.py, gen-logo.py, gen-wallpaper.py (the look)
 ├── CLAUDE.md                 # Guidance for AI agents working in this repo
 ├── THIRD_PARTY_NOTICES.md    # what is adapted from other projects
 └── .github/workflows/        # CI: builds the ISO and keeps it as a workflow artifact
@@ -123,22 +125,24 @@ LykanOS/
 ## Building the ISO
 
 Building requires an Arch Linux (or Arch container) environment with
-`archiso` installed — it will not run on Windows/macOS directly. See
-[scripts/build.sh](scripts/build.sh) and
+`archiso` and Rust installed — it will not run on Windows/macOS directly. See
+[tools/src/build.rs](tools/src/build.rs) and
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 
 ```bash
-sudo pacman -S --needed archiso curl git
+sudo pacman -S --needed archiso curl git rust
 git clone https://github.com/Artifex-Technologies/LykanOS.git
 cd LykanOS
 
-# Build the ISO as root (mkarchiso requires it)
-sudo bash scripts/build.sh
+# LykanOS's own programs, as yourself; then the ISO as root (mkarchiso requires it)
+(cd tools && cargo build --release --locked)
+sudo tools/target/release/lykanos-build
 ```
 
-Nothing is built locally: every package comes from a repository. `scripts/build.sh` installs BlackArch's key (BlackArch's
-`strap.sh`), trusts the Labyrinth package key (fetched, then checked against its full fingerprint before it is signed
-locally), makes the systemd service links in a work copy of the profile and runs `mkarchiso`. Until 2026-11-07 a first
+No package is built locally: every package comes from a repository; only LykanOS's own three programs are built (`tools/`,
+Rust). `lykanos-build` installs BlackArch's key (BlackArch's `strap.sh`), trusts the Labyrinth package key (fetched, then
+checked against its full fingerprint before it is signed locally), makes the systemd service links in a work copy of the
+profile, puts `lykanos-install-cleanup` and `lykanos-tool-menu` in its `/usr/local/bin` and runs `mkarchiso`. Until 2026-11-07 a first
 step built `sarina-git` into a local package repository from `packages/sarina`, a copy of Sarina that had been
 removed on 2026-10-08.
 
