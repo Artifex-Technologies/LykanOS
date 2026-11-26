@@ -229,7 +229,7 @@ Yggdrasil, Heimdall and Sarina repos
         ▼
 [labyrinth]   (GitHub release "packages" of Labyrinth_OS; Labyrinth's docs/PACKAGE_REPO.md)
         │
-        ▼  scripts/build.sh → mkarchiso, with Arch and [blackarch] (profile/pacman.conf)
+        ▼  lykanos-build (tools/) → mkarchiso, with Arch, [blackarch] and [cachyos] for the kernel (profile/pacman.conf)
 out/lykanos-<date>-x86_64.iso   (in CI: the workflow artifact lykanos-iso)
 ```
 

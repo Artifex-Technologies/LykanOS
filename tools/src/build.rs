@@ -4,9 +4,11 @@
 //!   1. BlackArch's signing key and mirror list on this build host, through BlackArch's own strap.sh, unless present;
 //!   2. Labyrinth OS's package signing key trusted on this build host by its full fingerprint: the desktop (Yggdrasil), Sarina
 //!      and Heimdall come from Labyrinth's signed repository ([labyrinth] in profile/pacman.conf);
-//!   3. a work copy of profile/ with the service links made there and LykanOS's own programs (lykanos-install-cleanup,
+//!   3. CachyOS's signing key trusted by its full fingerprint, and its keyring and mirror list installed, unless its mirror
+//!      list is there already: the kernel comes from CachyOS's repository ([cachyos]);
+//!   4. a work copy of profile/ with the service links made there and LykanOS's own programs (lykanos-install-cleanup,
 //!      lykanos-tool-menu) put in its /usr/local/bin;
-//!   4. mkarchiso on that copy.
+//!   5. mkarchiso on that copy.
 //!
 //! Output: out/*.iso (or $LYKANOS_OUT_DIR). LYKANOS_WORK_DIR and LYKANOS_OUT_DIR move work/ and out/ to another file system
 //! (a full BlackArch and desktop pacstrap needs far more room than a CI runner's root disk has; CI points them at its scratch
@@ -19,6 +21,12 @@ pub const LABYRINTH_FPR: &str = "C9CE784C8BD9B661042075972D3BD4B1E7CD07A5";
 const LABYRINTH_KEY_URL: &str =
     "https://raw.githubusercontent.com/Artifex-Technologies/Labyrinth_OS/main/packages/pkgbuilds/labyrinth-keyring/labyrinth.gpg";
 const BLACKARCH_STRAP: &str = "https://blackarch.org/strap.sh";
+/// CachyOS's package signing key, by its full fingerprint (a short id can be forged), as published at https://cachyos.org and
+/// trusted by Labyrinth's build.
+pub const CACHYOS_FPR: &str = "882DCFE48E2051D48E2562ABF3B607488DB35A47";
+const CACHYOS_REPO: &str = "https://mirror.cachyos.org/repo/x86_64/cachyos";
+/// What the build host needs from CachyOS's repository before pacman can read [cachyos].
+const CACHYOS_HOST: [&str; 2] = ["cachyos-keyring", "cachyos-mirrorlist"];
 
 /// LykanOS's own programs the image carries in /usr/local/bin, from this crate's build.
 pub const PROGRAMS: [&str; 2] = ["lykanos-install-cleanup", "lykanos-tool-menu"];
@@ -86,6 +94,121 @@ pub fn work_profile(p: &Places) -> Result<PathBuf, String> {
     Ok(dir)
 }
 
+/// The newest file of package `name` in a repository's listing (its HTML): name-VERSION-REL-ARCH.pkg.tar.zst, not a .sig.
+pub fn newest(listing: &str, name: &str) -> Option<String> {
+    let prefix = format!("{name}-");
+    let mut found: Vec<String> = vec![];
+    let mut rest = listing;
+    while let Some(i) = rest.find(&prefix) {
+        let tail = &rest[i..];
+        let end = tail
+            .find(['"', '\'', '<', '>', ' ', '\n'])
+            .unwrap_or(tail.len());
+        let file = &tail[..end];
+        let version_starts = file[prefix.len()..].starts_with(|c: char| c.is_ascii_digit());
+        // the name must not run on into another package's ("cachyos-keyring-" is not "cachyos-keyring-tools-")
+        let before = listing.len() - rest.len() + i;
+        let whole = before == 0
+            || !listing[..before].ends_with(|c: char| c.is_ascii_alphanumeric() || c == '-');
+        if version_starts && whole && file.ends_with(".pkg.tar.zst") {
+            found.push(file.to_string());
+        }
+        rest = &tail[end.max(1)..];
+    }
+    found.sort_by(|a, b| version_cmp(a, b));
+    found.pop()
+}
+
+/// Compares file names as `sort -V` does: runs of digits as numbers, the rest as text.
+fn version_cmp(a: &str, b: &str) -> std::cmp::Ordering {
+    fn chunks(s: &str) -> Vec<(bool, &str)> {
+        let mut out = vec![];
+        let mut start = 0;
+        let b = s.as_bytes();
+        for i in 1..=b.len() {
+            if i == b.len() || b[i].is_ascii_digit() != b[start].is_ascii_digit() {
+                out.push((b[start].is_ascii_digit(), &s[start..i]));
+                start = i;
+            }
+        }
+        out
+    }
+    for (x, y) in chunks(a).into_iter().zip(chunks(b)) {
+        let o = match (x, y) {
+            ((true, x), (true, y)) => x
+                .parse::<u128>()
+                .unwrap_or(0)
+                .cmp(&y.parse::<u128>().unwrap_or(0)),
+            ((_, x), (_, y)) => x.cmp(y),
+        };
+        if o != std::cmp::Ordering::Equal {
+            return o;
+        }
+    }
+    a.len().cmp(&b.len())
+}
+
+/// Trusts a key on this build host by its full fingerprint: fetched with `fetch`, its fingerprint compared, only then signed
+/// locally.
+fn trust_key(fpr: &str, who: &str, fetch: &[&str]) -> Result<(), String> {
+    if !crate::run_shown(fetch) {
+        return Err(format!("could not fetch {who}'s key"));
+    }
+    let finger = std::process::Command::new("pacman-key")
+        .args(["--finger", fpr])
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).replace(' ', ""))
+        .unwrap_or_default();
+    if !finger.contains(fpr) {
+        return Err(format!(
+            "the {who} key fetched does not have fingerprint {fpr}"
+        ));
+    }
+    if !crate::run_shown(&["pacman-key", "--lsign-key", fpr]) {
+        return Err(format!("could not sign {who}'s key locally"));
+    }
+    Ok(())
+}
+
+/// CachyOS's key, keyring and mirror list on this build host, unless its mirror list is there (a CachyOS host has them).
+fn cachyos_host() -> Result<(), String> {
+    println!("==> CachyOS's key, keyring and mirror list on the build host");
+    if Path::new("/etc/pacman.d/cachyos-mirrorlist").exists() {
+        println!("    already present");
+        return Ok(());
+    }
+    trust_key(
+        CACHYOS_FPR,
+        "CachyOS",
+        &[
+            "pacman-key",
+            "--recv-keys",
+            CACHYOS_FPR,
+            "--keyserver",
+            "keyserver.ubuntu.com",
+        ],
+    )?;
+    let listing = std::process::Command::new("curl")
+        .args(["-fsSL", &format!("{CACHYOS_REPO}/")])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
+        .ok_or_else(|| format!("could not read {CACHYOS_REPO}/"))?;
+    let mut install = vec!["pacman".to_string(), "-U".into(), "--noconfirm".into()];
+    for name in CACHYOS_HOST {
+        let file = newest(&listing, name)
+            .ok_or_else(|| format!("could not find {name} at {CACHYOS_REPO}"))?;
+        install.push(format!("{CACHYOS_REPO}/{file}"));
+    }
+    let argv: Vec<&str> = install.iter().map(String::as_str).collect();
+    // pacman checks the packages' signatures against the key just trusted
+    if !crate::run_shown(&argv) {
+        return Err("could not install CachyOS's keyring and mirror list".into());
+    }
+    Ok(())
+}
+
 /// The whole build: keys on this host, the work profile, mkarchiso.
 pub fn build(p: &Places) -> Result<(), String> {
     if !crate::is_root() {
@@ -114,27 +237,16 @@ pub fn build(p: &Places) -> Result<(), String> {
         println!("    already present");
     } else {
         let key = std::env::temp_dir().join(format!("labyrinth-{}.gpg", std::process::id()));
-        let key_s = key.to_string_lossy();
-        let fetched = crate::run_shown(&["curl", "-fsSL", LABYRINTH_KEY_URL, "-o", &key_s])
-            && crate::run_shown(&["pacman-key", "--add", &key_s]);
+        let key_s = key.to_string_lossy().into_owned();
+        let added = if crate::run_shown(&["curl", "-fsSL", LABYRINTH_KEY_URL, "-o", &key_s]) {
+            trust_key(LABYRINTH_FPR, "Labyrinth", &["pacman-key", "--add", &key_s])
+        } else {
+            Err("could not fetch Labyrinth's key".to_string())
+        };
         let _ = std::fs::remove_file(&key);
-        if !fetched {
-            return Err("could not fetch and add Labyrinth's key".into());
-        }
-        let finger = std::process::Command::new("pacman-key")
-            .args(["--finger", LABYRINTH_FPR])
-            .output()
-            .map(|o| String::from_utf8_lossy(&o.stdout).replace(' ', ""))
-            .unwrap_or_default();
-        if !finger.contains(LABYRINTH_FPR) {
-            return Err(format!(
-                "the Labyrinth key fetched does not have fingerprint {LABYRINTH_FPR}"
-            ));
-        }
-        if !crate::run_shown(&["pacman-key", "--lsign-key", LABYRINTH_FPR]) {
-            return Err("could not sign Labyrinth's key locally".into());
-        }
+        added?;
     }
+    cachyos_host()?;
     println!("==> Preparing the work copy of profile/");
     let profile = work_profile(p)?;
     println!("==> Running mkarchiso");
@@ -163,6 +275,27 @@ pub fn build(p: &Places) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_newest_package_in_a_listing() {
+        let listing = r#"<a href="cachyos-keyring-20240331-1-any.pkg.tar.zst">x</a>
+<a href="cachyos-keyring-20240331-1-any.pkg.tar.zst.sig">x</a>
+<a href="cachyos-keyring-20251210-1-any.pkg.tar.zst">x</a>
+<a href="cachyos-keyring-tools-99999999-1-any.pkg.tar.zst">x</a>
+<a href="cachyos-mirrorlist-18-1-any.pkg.tar.zst">x</a>
+<a href="cachyos-mirrorlist-9-1-any.pkg.tar.zst">x</a>
+<a href="cachyos-v3-mirrorlist-22-1-any.pkg.tar.zst">x</a>"#;
+        assert_eq!(
+            newest(listing, "cachyos-keyring").as_deref(),
+            Some("cachyos-keyring-20251210-1-any.pkg.tar.zst")
+        );
+        assert_eq!(
+            newest(listing, "cachyos-mirrorlist").as_deref(),
+            Some("cachyos-mirrorlist-18-1-any.pkg.tar.zst"),
+            "18 after 9"
+        );
+        assert_eq!(newest(listing, "cachyos-hello"), None);
+    }
 
     #[test]
     fn the_work_profile_has_the_links_and_the_programs() {

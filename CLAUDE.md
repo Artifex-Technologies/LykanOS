@@ -23,8 +23,10 @@ cd tools && cargo fmt --check && cargo clippy --all-targets -- -D warnings && ca
 ```
 
 `lykanos-build` installs BlackArch's key (BlackArch's `strap.sh`), trusts the Labyrinth package key by its full
-fingerprint (`C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`: fetched, fingerprint checked, then `pacman-key --lsign-key`), makes
-the systemd service links in a work copy of the profile, puts the two programs the image carries in its `/usr/local/bin` and
+fingerprint (`C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`: fetched, fingerprint checked, then `pacman-key --lsign-key`), does
+the same for CachyOS's key (`882DCFE48E2051D48E2562ABF3B607488DB35A47`, from keyserver.ubuntu.com) and installs CachyOS's
+keyring and mirror list unless the host has its mirror list (the kernel is CachyOS's, `[cachyos]`), makes the systemd
+service links in a work copy of the profile, puts the two programs the image carries in its `/usr/local/bin` and
 runs `mkarchiso`. `LYKANOS_WORK_DIR` and `LYKANOS_OUT_DIR` move
 `work/` and `out/` to another filesystem (CI does).
 
@@ -89,8 +91,9 @@ docs/plans/BACKLOG.md and docs/plans/LOG.md (private; ask the owner).
   `oci-runtime`, `java-runtime`, ...) makes pacstrap print a menu and silently take option 1. New ones need an entry in
   the "explicit provider choices" section.
 - **Two `pacman.conf` files, `[labyrinth]` last in both.** `profile/pacman.conf` is the build's (with `[blackarch]`);
-  `profile/airootfs/etc/pacman.conf` is the live medium's and the installed system's (Arch's repositories, `[labyrinth]`,
-  `[lykanos]`). Last on purpose: a same-named package above wins, so they add packages and never replace the base system.
+  `profile/airootfs/etc/pacman.conf` is the live medium's and the installed system's (Arch's repositories, `[cachyos]`,
+  `[labyrinth]`, `[lykanos]`). `[cachyos]` (the kernel: `linux-cachyos`, `linux-cachyos-lts` as the fallback; my decision
+  2026-11-26) comes after Arch's repositories in both, CachyOS's plain one, not its x86-64-v3 builds. Last on purpose: a same-named package above wins, so they add packages and never replace the base system.
 - **A `[labyrinth]` package goes into `packages.x86_64` only once Labyrinth's publish carries it**, or pacstrap stops at
   `target not found` and no ISO is built. Check Labyrinth_OS's release `packages` first.
 - **No committed symlinks under `profile/airootfs/`;** add service links to `LINKS` in `tools/src/build.rs`. This checkout has

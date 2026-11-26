@@ -59,7 +59,7 @@ less
 lftp
 libfido2
 libusb-compat
-linux
+# (releng's `linux` is replaced by CachyOS's kernels: the kernel section below)
 linux-atm
 linux-firmware
 linux-firmware-marvell
@@ -184,6 +184,17 @@ noto-fonts-emoji
 # the task manager Yggdrasil's Ctrl+Shift+Esc opens (in a terminal)
 btop
 firefox
+
+# --- the kernel: CachyOS's (my decision 2026-11-26, for the speed: the BORE scheduler keeps the
+# desktop quick while a scan or a cracking run loads the processor, built with LTO and its
+# performance patches; the same kernel as Labyrinth OS). From CachyOS's plain [cachyos]
+# repository (any 64-bit processor, not its x86-64-v3 builds), listed after Arch's so it adds
+# packages and never replaces Arch's. The LTS kernel is the boot menu's fallback. The keyring
+# and mirror list keep it updated on an installed system.
+linux-cachyos
+linux-cachyos-lts
+cachyos-keyring
+cachyos-mirrorlist
 
 # --- desktop networking/audio (releng is CLI-oriented; a desktop system
 # wants NetworkManager + PipeWire, in addition to releng's iwd/dhcpcd/modemmanager

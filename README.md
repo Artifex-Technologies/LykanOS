@@ -140,8 +140,8 @@ sudo tools/target/release/lykanos-build
 ```
 
 No package is built locally: every package comes from a repository; only LykanOS's own three programs are built (`tools/`,
-Rust). `lykanos-build` installs BlackArch's key (BlackArch's `strap.sh`), trusts the Labyrinth package key (fetched, then
-checked against its full fingerprint before it is signed locally), makes the systemd service links in a work copy of the
+Rust). `lykanos-build` installs BlackArch's key (BlackArch's `strap.sh`), trusts the Labyrinth package key and CachyOS's (the
+kernel is CachyOS's; each fetched, then checked against its full fingerprint before it is signed locally), makes the systemd service links in a work copy of the
 profile, puts `lykanos-install-cleanup` and `lykanos-tool-menu` in its `/usr/local/bin` and runs `mkarchiso`. Until 2026-11-07 a first
 step built `sarina-git` into a local package repository from `packages/sarina`, a copy of Sarina that had been
 removed on 2026-10-08.

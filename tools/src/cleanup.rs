@@ -26,9 +26,9 @@ pub const LIVE_ONLY: [&str; 9] = [
     "/usr/share/yggdrasil/integrations/lykanos-installer.conf",
 ];
 
-/// The keys pacman needs on the installed system: Arch's, BlackArch's (the tools) and Labyrinth's (the desktop, Sarina and
-/// Heimdall come from its signed repository).
-pub const KEYRINGS: [&str; 3] = ["archlinux", "blackarch", "labyrinth"];
+/// The keys pacman needs on the installed system: Arch's, BlackArch's (the tools), CachyOS's (the kernel) and Labyrinth's
+/// (the desktop, Sarina and Heimdall come from its signed repository).
+pub const KEYRINGS: [&str; 4] = ["archlinux", "blackarch", "cachyos", "labyrinth"];
 
 /// Messages said so far, and what went wrong.
 pub type Failure = (Vec<String>, String);
@@ -308,7 +308,7 @@ mod tests {
             calls,
             [
                 "pacman-key --init",
-                "pacman-key --populate archlinux blackarch labyrinth",
+                "pacman-key --populate archlinux blackarch cachyos labyrinth",
                 "systemctl enable clamav-freshclam.service"
             ]
         );
@@ -334,7 +334,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            calls[0], "pacman-key --populate archlinux blackarch labyrinth",
+            calls[0], "pacman-key --populate archlinux blackarch cachyos labyrinth",
             "no --init over a keyring"
         );
         assert!(!r.has("/etc/skel/.config"));
@@ -365,7 +365,7 @@ mod tests {
         let (said, e) = cleanup(&r.0, &mut |a| a[1] != "--populate", false).unwrap_err();
         assert_eq!(
             e,
-            "pacman-key --populate archlinux blackarch labyrinth failed"
+            "pacman-key --populate archlinux blackarch cachyos labyrinth failed"
         );
         assert!(
             said.iter()

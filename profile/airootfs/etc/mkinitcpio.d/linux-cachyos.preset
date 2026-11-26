@@ -1,11 +1,11 @@
-# Verbatim from archiso's releng profile
-# (archlinux/archiso configs/releng/airootfs/etc/mkinitcpio.d/linux.preset).
-# Builds ONLY the archiso image (no -fallback), at the path the syslinux and
-# efiboot entries reference. Re-sync when bumping archiso.
+# archiso's releng preset (archlinux/archiso configs/releng/airootfs/etc/mkinitcpio.d/linux.preset) for LykanOS's kernel,
+# CachyOS's (linux-cachyos, since 2026-11-26): ONLY the archiso image (no -fallback), at the path the syslinux and efiboot
+# entries reference. The installer replaces it with stock presets for every kernel (lykanos-install-cleanup). Re-sync when
+# bumping archiso.
 
 PRESETS=('archiso')
 
-ALL_kver='/boot/vmlinuz-linux'
+ALL_kver='/boot/vmlinuz-linux-cachyos'
 archiso_config='/etc/mkinitcpio.conf.d/archiso.conf'
 
-archiso_image="/boot/initramfs-linux.img"
+archiso_image="/boot/initramfs-linux-cachyos.img"
