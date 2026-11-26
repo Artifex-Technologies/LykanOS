@@ -25,8 +25,9 @@ penetration testing, combining:
 
 The goal is Kali-style organization, documentation, and out-of-the-box UX for
 security tooling, on top of Arch's package freshness and BlackArch's tool
-catalog — built and versioned in the open on GitHub, which BlackArch and Kali
-do not do.
+catalog, with an AI agent and a security monitor built in. Primarily red team,
+purple too: built for consulting, penetration testing, reverse engineering, and
+red and purple team work.
 
 **How it is tested.** Every change to the profile, the packages or the build scripts builds the whole ISO from scratch in
 the `Build ISO` workflow (an Arch container, `mkarchiso`, the image kept as a download), so a package that is missing or
@@ -36,13 +37,16 @@ checked is written down in [docs/INSTALLER.md](docs/INSTALLER.md).
 ## Why another security distro?
 
 Kali does a lot right: curated tool menus, consistent documentation, a
-predictable release/support cadence. But Kali isn't developed in the open on
-GitHub, and BlackArch (which *is* on GitHub) ships its full tool catalog by
-default, which can make the base system less stable for daily use. LykanOS
-aims to sit between them: an openly developed, Arch-based system with a
-deliberately small default tool set, a polished desktop (Yggdrasil on
-Hyprland), and an AI agent built in to help with recon, scripting, analysis, and general system
-tasks.
+predictable release/support cadence, and it is developed in the open (on
+GitLab, [gitlab.com/kalilinux](https://gitlab.com/kalilinux)). It is Debian-based; I prefer Arch: a rolling
+base with current tools, and BlackArch's catalog. BlackArch (on GitHub) ships its
+full tool catalog by default, which can make the base system less stable for daily
+use. LykanOS aims to sit between them: an openly developed, Arch-based system with a
+deliberately small default tool set, a polished desktop (Yggdrasil), an AI agent
+built in to help with recon, scripting, analysis, and general system tasks, and
+Heimdall, which works for the operator on both sides: it helps with the work (a
+listen-only look at a network), fights threats, and protects the machine on
+hostile networks such as a conference's (DEF CON).
 
 ## How tooling is delivered
 
