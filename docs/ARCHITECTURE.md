@@ -190,7 +190,7 @@ fresh id per boot. That also makes `ConditionFirstBoot=yes` true, so
 and root password before anything graphical starts — on a live ISO, a dead end.
 Shipping a real machine-id does not help, because mkarchiso overwrites it. So
 `etc/systemd/system/systemd-firstboot.service` is a link to `/dev/null`, made by
-`scripts/build.sh` in the work copy of the profile together with the other
+`lykanos-build` (`LINKS` in `tools/src/build.rs`) in the work copy of the profile together with the other
 service links (the default target, `display-manager.service` -> greetd,
 NetworkManager, Bluetooth, `pacman-init.service`). They are not kept in git:
 a checkout without symlinks turns a committed link into a text file holding its

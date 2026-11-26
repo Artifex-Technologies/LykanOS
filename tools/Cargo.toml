@@ -13,6 +13,17 @@ path = "src/lib.rs"
 [dependencies]
 # geteuid (the build and the clean-up run as root) and nothing else of it
 libc = "0.2"
+# lykanos-art only (the `art` feature): PNG in and out, Lanczos resizing
+image = { version = "0.25.10", default-features = false, features = ["png"], optional = true }
+
+[features]
+# lykanos-art, the logo and wallpaper maker: not part of the image's programs
+art = ["dep:image"]
+
+[[bin]]
+name = "lykanos-art"
+path = "src/bin/lykanos-art.rs"
+required-features = ["art"]
 
 [profile.release]
 strip = true

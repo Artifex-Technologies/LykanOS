@@ -87,8 +87,7 @@ from the profile.
   and on the installed system, so `pacman -Syu` brings desktop updates the same day Labyrinth gets them.
 - **What LykanOS adds:** four integration files Yggdrasil reads (its look, the installer's settings, Heimdall, and
   Agora's own LykanOS catalog), a pacman hook that puts the security tools in the start menu, and its look: deep teal
-  with Rosewood red, a wolf's head of maze walls as the logo, and a wallpaper (`scripts/gen-source.py`,
-  `scripts/gen-logo.py`, `scripts/gen-wallpaper.py`).
+  with Rosewood red, a wolf's head of maze walls as the logo, and a wallpaper (`lykanos-art`, in `tools/`).
 
 Details, and what is not checked yet, are in [docs/DESKTOP.md](docs/DESKTOP.md).
 
@@ -115,8 +114,8 @@ LykanOS/
 ├── assets/logo/              # the logo: my picture (lykanos-original.jpg), its straightened outline and the colour set
 ├── docs/                     # ARCHITECTURE.md, DESKTOP.md (Yggdrasil), INSTALLER.md, YGGDRASIL_MOVE.md
 ├── tools/                    # LykanOS's own programs, in Rust: lykanos-build (the ISO), lykanos-install-cleanup (the
-│                             #   installer's last step in the new system), lykanos-tool-menu (the tools' menu entries)
-├── scripts/                  # gen-source.py, gen-logo.py, gen-wallpaper.py (the look)
+│                             #   installer's last step in the new system), lykanos-tool-menu (the tools' menu entries),
+│                             #   lykanos-art (the logo set and the wallpaper, made on my computer)
 ├── CLAUDE.md                 # Guidance for AI agents working in this repo
 ├── THIRD_PARTY_NOTICES.md    # what is adapted from other projects
 └── .github/workflows/        # CI: builds the ISO and keeps it as a workflow artifact
@@ -162,7 +161,7 @@ permissions, and a build tree there would also try to sync to OneDrive.
 Early. Since 2026-11-07 the profile installs Yggdrasil instead of KDE Plasma.
 
 **The ISO builds; it has not been booted yet.** The GitHub workflow builds an ISO on every push to `main` that touches
-`profile/`, `scripts/` or the workflow itself, and when started by hand. From 2026-10-08, when the repository moved here,
+`profile/`, `tools/` or the workflow itself, and when started by hand. From 2026-10-08, when the repository moved here,
 every run stopped before `mkarchiso` (the scripts had no executable bit, and the local Sarina build had no source); since
 7d2bfe5 (2026-11-07) the runs build an ISO. The latest, `lykanos-2026.11.08-x86_64.iso` (27f3064, 2026-11-08), is
 4.2 GiB with 874 packages, and it is the first with an installer that can install: the ISOs of 2026-11-07 carried the

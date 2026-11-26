@@ -65,7 +65,7 @@ instead. That file is the same login screen plus an `initial_session`: once per 
 `yggdrasil-session` without a password. After signing out, the normal login screen comes. `lykanos-install-cleanup`
 deletes both files, so an installed system starts at the login screen.
 
-`display-manager.service` (pointing at `greetd.service`) is one of the links `scripts/build.sh` makes in the work copy of
+`display-manager.service` (pointing at `greetd.service`) is one of the links `lykanos-build` makes in the work copy of
 the profile; see CLAUDE.md for why they are not in git.
 
 ## Where the packages come from
@@ -92,7 +92,7 @@ Being last means a package of the same name in Arch's repositories (or `[blackar
 
 The signing key is `C9CE784C8BD9B661042075972D3BD4B1E7CD07A5`:
 
-- **On the build host**, `scripts/build.sh` downloads `labyrinth.gpg` from Labyrinth's repository, adds it, checks that it
+- **On the build host**, `lykanos-build` downloads `labyrinth.gpg` from Labyrinth's repository, adds it, checks that it
   has that full fingerprint and only then signs it locally (`pacman-key --lsign-key`).
 - **On the live medium**, `pacman-init.service` creates pacman's keyring at start-up and puts in the archlinux,
   blackarch and labyrinth keys (from `archlinux-keyring`, `blackarch-keyring` and `labyrinth-keyring`).
@@ -148,15 +148,18 @@ The logo is a wolf's head of maze walls, front on: I made the picture with Gemin
 drew more maze walls into it by hand (2026-11-07), so it carries Labyrinth's line work. It replaced a first version drawn the
 same day (Labyrinth's arrow turned upside down into a wolf's head), which I did not like as much.
 
-- `assets/logo/lykanos-original.jpg` is the picture as I made it. `scripts/gen-source.py` (Pillow, numpy, potrace,
-  rsvg-convert) centres it on a square, traces it as straight segments and straightens every outline (wobbles under 4 px
-  become one straight edge, corners stay sharp), so walls drawn with a finger come out straight: `assets/logo/
-  lykanos-source.svg` (the outline), `lykanos-source.png` and `lykanos-eyes.png` (the inside of each eye, filled from a point
-  in it). `scripts/gen-logo.py` (Pillow) makes the set: white, mint, green, rosewood, grey and black, as transparent PNGs and
+- `assets/logo/lykanos-original.jpg` is the picture as I made it. Traced once (2026-11-07, with a Python script since
+  removed: centred on a square, traced as straight segments, every outline straightened so walls drawn with a finger come
+  out straight) into `assets/logo/lykanos-source.svg` (the outline), `lykanos-source.png` and `lykanos-eyes.png` (the inside
+  of each eye). `lykanos-art logo` (`tools/src/art.rs`, Rust; `cargo run --release --features art --bin lykanos-art --
+  logo` in `tools/`) makes the set from them: white, mint, green, rosewood, grey and black, as transparent PNGs and
   SVGs from that outline (`assets/logo/`, shipped in `/usr/share/lykanos/logo/`), and the duo (mint walls, Rosewood eyes),
   which is the splash logo `lykanos-splash.png` and the icon `lykanos` (`/usr/share/icons/hicolor/*/apps/`;
-  `LOGO=lykanos` in os-release). A new picture: replace the original and run both again.
-- `scripts/gen-wallpaper.py` (Pillow) makes `/usr/share/wallpapers/lykanos/lykanos.png` (2560x1440): the desktop's
+  `LOGO=lykanos` in os-release). It makes the coloured PNGs, the SVGs and the duo exactly as the Python script did (byte for
+  byte); the splash and the icons differ from its by under one level in 255 on average at the edges (another Lanczos
+  resampler). A new picture: trace it into those three files, then run `lykanos-art logo`.
+- `lykanos-art wallpaper` makes `/usr/share/wallpapers/lykanos/lykanos.png` (2560x1440; the Python script's picture within
+  five levels in 255, its own grain): the desktop's
   default wallpaper (`lykanos-branding.conf`) and the login screen's (`/etc/yggdrasil/greeter.conf`).
 - No boot menu theme and no boot animation (GRUB's plain menu; no Plymouth).
 

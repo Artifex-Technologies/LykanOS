@@ -44,7 +44,7 @@ file in the same commit, and is told to the other repository's maintainers.
 
 - **`[labyrinth]`** (Labyrinth OS's signed repository, last in both `pacman.conf` files): the Yggdrasil packages,
   `sarina-git`, `heimdall-git`, `heimdall-private-mic-git`, `heimdall-multilink-git`, `labyrinth-keyring`. The key is
-  trusted by its full fingerprint in `scripts/build.sh`.
+  trusted by its full fingerprint in `lykanos-build` (`tools/src/build.rs`).
 - **Sarina** (`sarina-git`): the package name; `sarina`, `sarina-gui` and `sarina-service` on `PATH`; the `sarina` account
   name (reserved in `lykanos-installer.conf`); `sarina desktop-audit --apply --only-category Security --target-dir
   /usr/local/share/applications`, run by `/usr/local/bin/lykanos-tool-menu` from a pacman hook.

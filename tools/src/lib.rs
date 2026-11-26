@@ -1,7 +1,10 @@
 //! LykanOS's own programs, one crate: `lykanos-build` (the ISO), `lykanos-install-cleanup` (the installer's last step inside the
-//! new system) and `lykanos-tool-menu` (the security tools' start-menu entries, from a pacman hook). What they share: running
+//! new system) and `lykanos-tool-menu` (the security tools' start-menu entries, from a pacman hook); with the `art` feature
+//! also `lykanos-art` (the logo and the wallpaper, made on my computer, not shipped). What they share: running
 //! commands, finding a program, knowing whether this is root.
 
+#[cfg(feature = "art")]
+pub mod art;
 pub mod build;
 pub mod cleanup;
 

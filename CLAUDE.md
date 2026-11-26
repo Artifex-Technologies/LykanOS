@@ -5,8 +5,8 @@
 LykanOS (named Chymaera OS until 2026-11-07) is an Arch-based security distribution. This repository is an
 [archiso](https://github.com/archlinux/archiso) profile (`profile/`), LykanOS's own programs in Rust (`tools/`: `lykanos-build`
 turns the profile into a bootable ISO, `lykanos-install-cleanup` is the installer's last step in the new system,
-`lykanos-tool-menu` writes the tools' start-menu entries), and the scripts that make its logo and wallpaper
-(`scripts/gen-*.py`). The desktop
+`lykanos-tool-menu` writes the tools' start-menu entries; `lykanos-art`, built only with the `art` feature, makes its logo
+set and wallpaper). The desktop
 (Yggdrasil on Hyprland, greetd, Yggdrasil's installer), Sarina, Heimdall and `labyrinth-keyring` are packages from Labyrinth
 OS's signed repository `[labyrinth]`; their code lives in those repositories. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 before design decisions; [docs/DESKTOP.md](docs/DESKTOP.md) covers the desktop and what LykanOS adds,
@@ -19,7 +19,8 @@ Two steps: LykanOS's programs as yourself, then the ISO as root on an Arch host 
 ```bash
 (cd tools && cargo build --release --locked)
 sudo tools/target/release/lykanos-build
-cd tools && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test   # the programs' checks
+cd tools && cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings && cargo test --all-features   # the checks
+cargo run --release --features art --bin lykanos-art -- logo        # in tools/: the logo set again (wallpaper: `-- wallpaper`)
 ```
 
 `lykanos-build` installs BlackArch's key (BlackArch's `strap.sh`), trusts the Labyrinth package key by its full
@@ -40,7 +41,7 @@ pacman -Sp --print-format '%r/%n' "${PKGS[@]}"   # on a host with [blackarch] an
 ```
 
 CI: `.github/workflows/tools.yml` checks `tools/` (fmt, clippy, tests) on every push that touches it;
-`.github/workflows/build-iso.yml` builds the ISO on every push to `main` that touches `profile/`, `tools/`, `scripts/` or the
+`.github/workflows/build-iso.yml` builds the ISO on every push to `main` that touches `profile/`, `tools/` or the
 workflow, and by hand; `archlinux:latest` privileged on `ubuntu-latest`, 14 to 21 minutes, the ISO as the artifact
 `lykanos-iso`. The runner's `/` has about 14 GB free, so the job mounts the ~70 GB `/mnt` scratch disk for the work tree,
 pacman cache and output; when a disk fills, the runner dies and GitHub uploads **no log** (a 22-byte zip), which is why

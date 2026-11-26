@@ -26,5 +26,5 @@ jobs:
         working-directory: tools
         run: |
           cargo fmt --check
-          cargo clippy --all-targets --locked -- -D warnings
-          cargo test --locked
+          cargo clippy --all-targets --all-features --locked -- -D warnings
+          cargo test --all-features --locked
